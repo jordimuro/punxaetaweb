@@ -1,0 +1,142 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(18px);
+  background: rgba(249, 246, 241, 0.72);
+  border-bottom: 1px solid rgba(39, 52, 63, 0.08);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.5rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(145deg, #1d4b3f, #b33b2e);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 12px 30px rgba(29, 75, 63, 0.25);
+}
+
+.brandText {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.brandText strong {
+  font-size: 0.98rem;
+  color: var(--text);
+}
+
+.brandText span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(39, 52, 63, 0.14);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+}
+
+.toggleIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.link {
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  color: var(--muted);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.link:hover {
+  color: var(--text);
+  background: rgba(29, 75, 63, 0.08);
+}
+
+.linkActive {
+  color: var(--text);
+  background: rgba(29, 75, 63, 0.1);
+}
+
+.linkPill {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 10px 24px rgba(179, 59, 46, 0.2);
+}
+
+.linkPill:hover {
+  color: #fff;
+  background: #9f3125;
+}
+
+@media (max-width: 860px) {
+  .toggle {
+    display: inline-flex;
+  }
+
+  .nav {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 1rem;
+    right: 1rem;
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(39, 52, 63, 0.1);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 20px 50px rgba(21, 32, 43, 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-0.4rem);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .navOpen {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .link {
+    width: 100%;
+  }
+}
