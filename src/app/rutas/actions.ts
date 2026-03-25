@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  deleteRoute,
   createRoute,
   parseRouteFormData,
+  saveRouteGpx,
   updateRoute,
   type RouteFormState,
 } from "@/lib/routes";
@@ -63,4 +65,31 @@ export async function saveRouteAction(
   }
 
   redirect(`/rutas/${route.slug}`);
+}
+
+export async function deleteRouteAction(formData: FormData) {
+  const slug = String(formData.get("slug") ?? "").trim();
+
+  if (!slug) {
+    return;
+  }
+
+  await deleteRoute(slug);
+  revalidatePath("/");
+  revalidatePath("/rutas");
+  redirect("/rutas");
+}
+
+export async function saveRouteGpxAction(formData: FormData) {
+  const slug = String(formData.get("slug") ?? "").trim();
+  const file = formData.get("gpxFile");
+
+  if (!slug || !(file instanceof File) || file.size === 0) {
+    redirect(`/rutas/${slug}`);
+  }
+
+  await saveRouteGpx(slug, file);
+  revalidatePath("/rutas");
+  revalidatePath(`/rutas/${slug}`);
+  redirect(`/rutas/${slug}`);
 }

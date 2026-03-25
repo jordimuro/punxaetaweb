@@ -72,11 +72,23 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
 
                 <dl className="stats stats--stacked">
                   <div>
+                    <dt>Eixida</dt>
+                    <dd>{route.meetingPoint}</dd>
+                  </div>
+                  <div>
                     <dt>Esmorzar</dt>
                     <dd>{route.breakfastPlace}</dd>
                   </div>
                   <div>
-                    <dt>Eixida</dt>
+                    <dt>Distància esmorzar</dt>
+                    <dd>{route.distanceToBreakfast} km</dd>
+                  </div>
+                  <div>
+                    <dt>Desnivell esmorzar</dt>
+                    <dd>{route.elevationToBreakfast} m</dd>
+                  </div>
+                  <div>
+                    <dt>Eixides</dt>
                     <dd>{route.departureTimes.join(" i ")}</dd>
                   </div>
                   <div>

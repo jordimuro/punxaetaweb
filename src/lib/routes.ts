@@ -12,8 +12,10 @@ import {
   type RouteView,
 } from "@/data/routes";
 
-export type RouteRecord = CyclingRoute & {
+export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationToBreakfast"> & {
   id: string;
+  distanceToBreakfast: number;
+  elevationToBreakfast: number;
 };
 
 export type RouteFormValues = {
@@ -25,6 +27,8 @@ export type RouteFormValues = {
   breakfastPlace: string;
   departureTimeOne: string;
   departureTimeTwo: string;
+  distanceToBreakfast: string;
+  elevationToBreakfast: string;
   kms: string;
   elevationGain: string;
   town: string;
@@ -47,12 +51,16 @@ type RouteRow = {
   breakfastPlace: string;
   departureTimeOne: string;
   departureTimeTwo: string | null;
+  distanceToBreakfast: number;
+  elevationToBreakfast: number;
   kms: number;
   elevationGain: number;
   town: string;
   summary: string;
   meetingPoint: string;
   notes: string;
+  gpxFileName: string | null;
+  gpxContent: string | null;
 };
 
 const createTableStatement = db.prepare(`
@@ -64,12 +72,16 @@ const createTableStatement = db.prepare(`
     breakfastPlace TEXT NOT NULL,
     departureTimeOne TEXT NOT NULL,
     departureTimeTwo TEXT,
+    distanceToBreakfast INTEGER NOT NULL DEFAULT 0,
+    elevationToBreakfast INTEGER NOT NULL DEFAULT 0,
     kms INTEGER NOT NULL,
     elevationGain INTEGER NOT NULL,
     town TEXT NOT NULL,
     summary TEXT NOT NULL,
     meetingPoint TEXT NOT NULL,
     notes TEXT NOT NULL,
+    gpxFileName TEXT,
+    gpxContent TEXT,
     createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
@@ -77,28 +89,43 @@ const createTableStatement = db.prepare(`
 
 createTableStatement.run();
 
+function ensureColumn(name: string, definition: string) {
+  const columns = db.prepare("PRAGMA table_info(routes)").all() as Array<{ name: string }>;
+  if (columns.some((column) => column.name === name)) {
+    return;
+  }
+
+  db.exec(`ALTER TABLE routes ADD COLUMN ${definition}`);
+}
+
+ensureSchema();
+
 const listRoutesStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, kms, elevationGain, town, summary, meetingPoint, notes FROM routes ORDER BY date ASC, name ASC",
+  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes ORDER BY date ASC, name ASC",
 );
 const findRouteStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, kms, elevationGain, town, summary, meetingPoint, notes FROM routes WHERE slug = ? LIMIT 1",
+  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes WHERE slug = ? LIMIT 1",
 );
 const insertRouteStatement = db.prepare(`
   INSERT INTO routes (
     id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
-    kms, elevationGain, town, summary, meetingPoint, notes
+    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
+    summary, meetingPoint, notes, gpxFileName, gpxContent
   ) VALUES (
     @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
-    @kms, @elevationGain, @town, @summary, @meetingPoint, @notes
+    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
+    @summary, @meetingPoint, @notes, @gpxFileName, @gpxContent
   )
 `);
 const seedInsertRouteStatement = db.prepare(`
   INSERT OR IGNORE INTO routes (
     id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
-    kms, elevationGain, town, summary, meetingPoint, notes
+    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
+    summary, meetingPoint, notes, gpxFileName, gpxContent
   ) VALUES (
     @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
-    @kms, @elevationGain, @town, @summary, @meetingPoint, @notes
+    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
+    @summary, @meetingPoint, @notes, @gpxFileName, @gpxContent
   )
 `);
 const updateRouteStatement = db.prepare(`
@@ -109,12 +136,16 @@ const updateRouteStatement = db.prepare(`
     breakfastPlace = @breakfastPlace,
     departureTimeOne = @departureTimeOne,
     departureTimeTwo = @departureTimeTwo,
+    distanceToBreakfast = @distanceToBreakfast,
+    elevationToBreakfast = @elevationToBreakfast,
     kms = @kms,
     elevationGain = @elevationGain,
     town = @town,
     summary = @summary,
     meetingPoint = @meetingPoint,
     notes = @notes,
+    gpxFileName = @gpxFileName,
+    gpxContent = @gpxContent,
     updatedAt = CURRENT_TIMESTAMP
   WHERE id = @id
 `);
@@ -127,6 +158,10 @@ const seedRoutesTransaction = db.transaction((rows: RouteRow[]) => {
 
 function ensureSchema() {
   createTableStatement.run();
+  ensureColumn("distanceToBreakfast", "distanceToBreakfast INTEGER NOT NULL DEFAULT 0");
+  ensureColumn("elevationToBreakfast", "elevationToBreakfast INTEGER NOT NULL DEFAULT 0");
+  ensureColumn("gpxFileName", "gpxFileName TEXT");
+  ensureColumn("gpxContent", "gpxContent TEXT");
 }
 
 function seedRoutesIfNeeded() {
@@ -140,12 +175,16 @@ function seedRoutesIfNeeded() {
       breakfastPlace: route.breakfastPlace,
       departureTimeOne: route.departureTimes[0] ?? "",
       departureTimeTwo: route.departureTimes[1] ?? null,
+      distanceToBreakfast: route.distanceToBreakfast ?? 0,
+      elevationToBreakfast: route.elevationToBreakfast ?? 0,
       kms: route.kms,
       elevationGain: route.elevationGain,
       town: route.town,
       summary: route.summary,
       meetingPoint: route.meetingPoint,
       notes: route.notes,
+      gpxFileName: route.gpxFileName ?? null,
+      gpxContent: route.gpxContent ?? null,
     })),
   );
 }
@@ -162,12 +201,16 @@ function toRouteRecord(route: RouteRow): RouteRecord {
     date: route.date,
     breakfastPlace: route.breakfastPlace,
     departureTimes,
+    distanceToBreakfast: route.distanceToBreakfast,
+    elevationToBreakfast: route.elevationToBreakfast,
     kms: route.kms,
     elevationGain: route.elevationGain,
     town: route.town,
     summary: route.summary,
     meetingPoint: route.meetingPoint,
     notes: route.notes,
+    gpxFileName: route.gpxFileName,
+    gpxContent: route.gpxContent,
   };
 }
 
@@ -192,6 +235,8 @@ export const emptyRouteValues = (): RouteFormValues => ({
   breakfastPlace: "",
   departureTimeOne: "",
   departureTimeTwo: "",
+  distanceToBreakfast: "",
+  elevationToBreakfast: "",
   kms: "",
   elevationGain: "",
   town: "",
@@ -241,6 +286,8 @@ function buildRouteErrors(values: RouteFormValues) {
   if (!values.date.trim()) errors.date = "Cal una data.";
   if (!values.breakfastPlace.trim()) errors.breakfastPlace = "Cal un lloc d'esmorzar.";
   if (!values.departureTimeOne.trim()) errors.departureTimeOne = "Cal com a mínim una hora d'eixida.";
+  if (!values.distanceToBreakfast.trim()) errors.distanceToBreakfast = "Cal indicar la distància fins a esmorzar.";
+  if (!values.elevationToBreakfast.trim()) errors.elevationToBreakfast = "Cal indicar el desnivell fins a esmorzar.";
   if (!values.kms.trim()) errors.kms = "Cal indicar els quilòmetres.";
   if (!values.elevationGain.trim()) errors.elevationGain = "Cal indicar el desnivell.";
   if (!values.town.trim()) errors.town = "Cal indicar la població.";
@@ -261,6 +308,8 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     breakfastPlace: route.breakfastPlace,
     departureTimeOne: route.departureTimes[0] ?? "",
     departureTimeTwo: route.departureTimes[1] ?? "",
+    distanceToBreakfast: String(route.distanceToBreakfast),
+    elevationToBreakfast: String(route.elevationToBreakfast),
     kms: String(route.kms),
     elevationGain: String(route.elevationGain),
     town: route.town,
@@ -280,6 +329,8 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     breakfastPlace: String(formData.get("breakfastPlace") ?? "").trim(),
     departureTimeOne: String(formData.get("departureTimeOne") ?? "").trim(),
     departureTimeTwo: String(formData.get("departureTimeTwo") ?? "").trim(),
+    distanceToBreakfast: String(formData.get("distanceToBreakfast") ?? "").trim(),
+    elevationToBreakfast: String(formData.get("elevationToBreakfast") ?? "").trim(),
     kms: String(formData.get("kms") ?? "").trim(),
     elevationGain: String(formData.get("elevationGain") ?? "").trim(),
     town: String(formData.get("town") ?? "").trim(),
@@ -305,12 +356,16 @@ export async function createRoute(values: RouteFormValues) {
     date: toDbDate(values.date),
     breakfastPlace: values.breakfastPlace,
     ...normalizeDepartureTimes([values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
+    distanceToBreakfast: Number(values.distanceToBreakfast),
+    elevationToBreakfast: Number(values.elevationToBreakfast),
     kms: Number(values.kms),
     elevationGain: Number(values.elevationGain),
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
     notes: values.notes,
+    gpxFileName: null,
+    gpxContent: null,
   };
 
   insertRouteStatement.run(row);
@@ -319,6 +374,11 @@ export async function createRoute(values: RouteFormValues) {
 
 export async function updateRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
+  const existing = values.id
+    ? (db.prepare(
+        "SELECT gpxFileName, gpxContent FROM routes WHERE id = ? LIMIT 1",
+      ).get(values.id) as Pick<RouteRow, "gpxFileName" | "gpxContent"> | undefined)
+    : undefined;
   const row: RouteRow = {
     id: values.id,
     slug: values.slug,
@@ -326,16 +386,61 @@ export async function updateRoute(values: RouteFormValues) {
     date: toDbDate(values.date),
     breakfastPlace: values.breakfastPlace,
     ...normalizeDepartureTimes([values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
+    distanceToBreakfast: Number(values.distanceToBreakfast),
+    elevationToBreakfast: Number(values.elevationToBreakfast),
     kms: Number(values.kms),
     elevationGain: Number(values.elevationGain),
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
     notes: values.notes,
+    gpxFileName: existing?.gpxFileName ?? null,
+    gpxContent: existing?.gpxContent ?? null,
   };
 
   updateRouteStatement.run(row);
   return toRouteRecord(row);
+}
+
+export async function deleteRoute(slug: string) {
+  seedRoutesIfNeeded();
+  const existing = findRouteStatement.get(slug) as RouteRow | undefined;
+  if (!existing) {
+    return null;
+  }
+
+  db.prepare("DELETE FROM routes WHERE slug = ?").run(slug);
+  return toRouteRecord(existing);
+}
+
+export async function saveRouteGpx(slug: string, file: File) {
+  seedRoutesIfNeeded();
+  const existing = findRouteStatement.get(slug) as RouteRow | undefined;
+
+  if (!existing) {
+    return null;
+  }
+
+  const gpxContent = await file.text();
+  const updateGpxStatement = db.prepare(`
+    UPDATE routes SET
+      gpxFileName = @gpxFileName,
+      gpxContent = @gpxContent,
+      updatedAt = CURRENT_TIMESTAMP
+    WHERE slug = @slug
+  `);
+
+  updateGpxStatement.run({
+    slug,
+    gpxFileName: file.name,
+    gpxContent,
+  });
+
+  return toRouteRecord({
+    ...existing,
+    gpxFileName: file.name,
+    gpxContent,
+  });
 }
 
 export function buildDateLabel(date: string) {

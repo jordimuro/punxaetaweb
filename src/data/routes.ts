@@ -4,12 +4,16 @@ export type CyclingRoute = {
   date: string;
   breakfastPlace: string;
   departureTimes: string[];
+  distanceToBreakfast?: number;
+  elevationToBreakfast?: number;
   kms: number;
   elevationGain: number;
   town: string;
   summary: string;
   meetingPoint: string;
   notes: string;
+  gpxFileName?: string | null;
+  gpxContent?: string | null;
 };
 
 export type RouteView = "properes" | "passades" | "totes";

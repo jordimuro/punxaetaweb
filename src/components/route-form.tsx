@@ -75,7 +75,33 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
           </label>
 
           <label className="field">
-            <span>Punt de trobada</span>
+            <span>Distància fins a esmorzar</span>
+            <input
+              type="number"
+              name="distanceToBreakfast"
+              defaultValue={state.values.distanceToBreakfast}
+              min="0"
+              step="1"
+              placeholder="Km fins a esmorzar"
+            />
+            <FieldError message={state.errors.distanceToBreakfast} />
+          </label>
+
+          <label className="field">
+            <span>Desnivell fins a esmorzar</span>
+            <input
+              type="number"
+              name="elevationToBreakfast"
+              defaultValue={state.values.elevationToBreakfast}
+              min="0"
+              step="1"
+              placeholder="Metres fins a esmorzar"
+            />
+            <FieldError message={state.errors.elevationToBreakfast} />
+          </label>
+
+          <label className="field">
+            <span>Punt d&apos;eixida</span>
             <input
               name="meetingPoint"
               defaultValue={state.values.meetingPoint}
