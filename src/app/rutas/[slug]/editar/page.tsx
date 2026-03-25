@@ -22,7 +22,7 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
           <RouteForm
             action={saveRouteAction}
             initialValues={routeToFormValues(route)}
-            title="Editar ruta"
+            title="Mapa i perfil"
             submitLabel="Guardar canvis"
           />
         </div>

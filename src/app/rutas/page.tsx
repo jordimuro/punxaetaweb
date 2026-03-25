@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthOnly } from "@/components/auth";
 import {
   buildDateLabel,
   getRoutesByView,
@@ -41,9 +42,11 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
               <span className="eyebrow">Rutes</span>
               <h1>Calendari de rutes</h1>
             </div>
-            <Link className="button button--primary" href="/rutas/nova">
-              Nova ruta
-            </Link>
+            <AuthOnly fallback={null}>
+              <Link className="button button--primary" href="/rutas/nova">
+                Nova ruta
+              </Link>
+            </AuthOnly>
           </div>
 
           <div className="filter-bar" aria-label="Filtre de rutes">

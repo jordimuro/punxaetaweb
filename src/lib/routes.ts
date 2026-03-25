@@ -103,6 +103,7 @@ ensureSchema();
 const listRoutesStatement = db.prepare(
   "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes ORDER BY date ASC, name ASC",
 );
+const countRoutesStatement = db.prepare("SELECT COUNT(*) as count FROM routes");
 const findRouteStatement = db.prepare(
   "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes WHERE slug = ? LIMIT 1",
 );
@@ -166,6 +167,12 @@ function ensureSchema() {
 
 function seedRoutesIfNeeded() {
   ensureSchema();
+  const existingRoutes = countRoutesStatement.get() as { count: number };
+
+  if (existingRoutes.count > 0) {
+    return;
+  }
+
   seedRoutesTransaction(
     seedRoutes.map((route) => ({
       id: randomUUID(),

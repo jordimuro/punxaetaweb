@@ -1,49 +1,35 @@
+import Image from "next/image";
 import Link from "next/link";
-import {
-  buildDateLabel,
-  getTodayKey,
-  getUpcomingRoutes,
-} from "@/lib/routes";
+import { buildDateLabel, getTodayKey, getUpcomingRoutes } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const todayKey = getTodayKey();
-  const highlightedRoutes = await getUpcomingRoutes(todayKey, 3);
+  const highlightedRoutes = await getUpcomingRoutes(todayKey, 1);
   const nextRoute = highlightedRoutes[0];
 
   return (
     <div className="page">
-      <section className="hero">
-        <div className="container hero__grid">
-          <div className="hero__copy">
-            <span className="eyebrow">Club ciclista</span>
-            <h1>Properes rutes</h1>
-            <p className="lead">Calendari, carrera i equipacions.</p>
-            <div className="hero__actions">
-              <Link className="button button--primary" href="/rutas">
-                Anar a rutes
-              </Link>
-              <Link className="button button--secondary" href="/rutas/nova">
-                Nova ruta
-              </Link>
-            </div>
-          </div>
-
-          <aside className="panel panel--featured">
-            <span className="panel__label">Pròxima eixida</span>
+      <section className="section section--soft">
+        <div className="container">
+          <div className="home-summary-grid">
             {nextRoute ? (
-              <>
-                <h2>{nextRoute.name}</h2>
+              <Link className="home-summary-card home-summary-card--route" href={`/rutas/${nextRoute.slug}`}>
+                <div className="home-summary-card__top">
+                  <span className="pill">Pròxima ruta</span>
+                  <span className="pill pill--subtle">{buildDateLabel(nextRoute.date)}</span>
+                </div>
+                <h3>{nextRoute.name}</h3>
                 <p>{nextRoute.summary}</p>
-                <dl className="stats">
-                  <div>
-                    <dt>Data</dt>
-                    <dd>{buildDateLabel(nextRoute.date)}</dd>
-                  </div>
+                <dl className="stats stats--compact">
                   <div>
                     <dt>Eixida</dt>
-                    <dd>{nextRoute.departureTimes.join(" i ")}</dd>
+                    <dd>{nextRoute.departureTimes.join(" / ")}</dd>
+                  </div>
+                  <div>
+                    <dt>Esmorzar</dt>
+                    <dd>{nextRoute.breakfastPlace}</dd>
                   </div>
                   <div>
                     <dt>Kms</dt>
@@ -54,49 +40,59 @@ export default async function HomePage() {
                     <dd>{nextRoute.elevationGain} m</dd>
                   </div>
                 </dl>
-              </>
-            ) : (
-              <p>No hi ha rutes programades.</p>
-            )}
-          </aside>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="section__header">
-            <span className="eyebrow">Rutes</span>
-            <h2>Les més pròximes</h2>
-          </div>
-          <div className="route-rail">
-            {highlightedRoutes.map((route) => (
-              <Link key={route.slug} className="route-card" href={`/rutas/${route.slug}`}>
-                <div className="route-card__top">
-                  <span className="pill">{buildDateLabel(route.date)}</span>
-                  <span className="pill pill--subtle">{route.town}</span>
-                </div>
-                <h3>{route.name}</h3>
-                <p>{route.summary}</p>
-                <dl className="stats stats--compact">
-                  <div>
-                    <dt>Esmorzar</dt>
-                    <dd>{route.breakfastPlace}</dd>
-                  </div>
-                  <div>
-                    <dt>Eixida</dt>
-                    <dd>{route.departureTimes.join(" / ")}</dd>
-                  </div>
-                  <div>
-                    <dt>Kms</dt>
-                    <dd>{route.kms} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell</dt>
-                    <dd>{route.elevationGain} m</dd>
-                  </div>
-                </dl>
+                <span className="home-summary-card__cta">Obrir detall →</span>
               </Link>
-            ))}
+            ) : (
+              <div className="home-summary-card home-summary-card--route">
+                <span className="pill">Pròxima ruta</span>
+                <h3>No hi ha rutes programades.</h3>
+                <p>Quan es cree la següent ruta apareixerà ací de manera automàtica.</p>
+              </div>
+            )}
+
+            <Link className="home-summary-card home-summary-card--event" href="/carrera-ciclista">
+              <div className="home-summary-card__top">
+                <span className="pill">Trofeu</span>
+                <span className="pill pill--subtle">6 de setembre de 2026</span>
+              </div>
+              <h3>Segona edició del Trofeu Vila de Muro-Punxaeta</h3>
+              <p>
+                Escoles de ciclisme, cadets xics, xiques i júniors femines en una matinal
+                esportiva pensada per a continuar fent créixer la prova.
+              </p>
+              <dl className="stats stats--compact">
+                <div>
+                  <dt>Hora</dt>
+                  <dd>9:00 h</dd>
+                </div>
+                <div>
+                  <dt>Format</dt>
+                  <dd>Matinal</dd>
+                </div>
+              </dl>
+              <span className="home-summary-card__cta">Llegir notícia →</span>
+            </Link>
+
+            <Link className="home-summary-card home-summary-card--equipacions" href="/equipaciones">
+              <div className="home-summary-card__top">
+                <span className="pill">Equipacions</span>
+                <span className="pill pill--subtle">Nova col·lecció</span>
+              </div>
+              <div className="home-summary-card__media">
+                <Image
+                  src="/equipacions/09-frontal-2.jpeg"
+                  alt="Maillot del Club Ciclista La Punxaeta"
+                  fill
+                  sizes="(max-width: 980px) 100vw, 33vw"
+                />
+              </div>
+              <h3>La imatge del club en blau</h3>
+              <p>
+                Una col·lecció que combina el blau clar més representatiu amb marí i blanc per a
+                donar una presència elegant i reconeixible.
+              </p>
+              <span className="home-summary-card__cta">Veure equipacions →</span>
+            </Link>
           </div>
         </div>
       </section>

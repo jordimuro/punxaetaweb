@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { HeaderAuthControl, InstagramLink } from "./auth";
 import styles from "./site-header.module.css";
 
 const navigation = [
   { href: "/", label: "Inici" },
   { href: "/rutas", label: "Rutes" },
-  { href: "/carrera-ciclista", label: "Carrera ciclista" },
+  { href: "/carrera-ciclista", label: "Trofeu Vila de Muro-Punxaeta" },
   { href: "/equipaciones", label: "Equipacions" },
-  { href: "/login", label: "Accés", isPill: true },
 ];
 
 export function SiteHeader() {
@@ -22,10 +22,12 @@ export function SiteHeader() {
       <div className="container">
         <div className={styles.inner}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark}>PC</span>
+            <span className={styles.brandMark} aria-hidden="true">
+              <span className={styles.brandMark__core}>LP</span>
+            </span>
             <span className={styles.brandText}>
-              <strong>Club Ciclista</strong>
-              <span>Rutes, carrera i equipacions</span>
+              <strong>CC La Punxaeta</strong>
+              <span>Muro</span>
             </span>
           </Link>
 
@@ -56,9 +58,7 @@ export function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`${styles.link} ${item.isPill ? styles.linkPill : ""} ${
-                    active ? styles.linkActive : ""
-                  }`}
+                  className={`${styles.link} ${active ? styles.linkActive : ""}`}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setIsOpen(false)}
                 >
@@ -66,6 +66,11 @@ export function SiteHeader() {
                 </Link>
               );
             })}
+            <HeaderAuthControl
+              className={`${styles.authControl} ${styles.linkPill}`}
+              onNavigate={() => setIsOpen(false)}
+            />
+            <InstagramLink className={`${styles.link} ${styles.linkInstagram}`} />
           </nav>
         </div>
       </div>

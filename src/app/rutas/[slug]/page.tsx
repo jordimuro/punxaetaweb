@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AuthOnly } from "@/components/auth";
 import { GpxViewer } from "@/components/gpx-viewer";
 import { buildDateLabel, getRouteBySlug } from "@/lib/routes";
 import { deleteRouteAction, saveRouteGpxAction } from "../actions";
@@ -26,17 +27,21 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             <Link className="text-link" href="/rutas">
               ← Tornar al llistat
             </Link>
-            <div className="detail-toolbar__actions">
-              <Link className="button button--secondary" href={`/rutas/${route.slug}/editar`}>
-                Editar ruta
-              </Link>
-              <form action={deleteRouteAction}>
-                <input type="hidden" name="slug" value={route.slug} />
-                <button className="button button--danger" type="submit">
-                  Eliminar ruta
-                </button>
-              </form>
-            </div>
+            <AuthOnly
+              fallback={null}
+            >
+              <div className="detail-toolbar__actions">
+                <Link className="button button--secondary" href={`/rutas/${route.slug}/editar`}>
+                  Editar recorregut
+                </Link>
+                <form action={deleteRouteAction}>
+                  <input type="hidden" name="slug" value={route.slug} />
+                  <button className="button button--danger" type="submit">
+                    Eliminar ruta
+                  </button>
+                </form>
+              </div>
+            </AuthOnly>
           </div>
 
           <div className="page-head page-head--tight">
@@ -85,7 +90,7 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             </article>
 
             <aside className="panel panel--accent">
-              <span className="panel__label">Notes</span>
+              <span className="panel__label">Recorregut</span>
               <div className="notes">
                 <p>{route.notes}</p>
               </div>
@@ -93,28 +98,26 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
           </div>
 
           <section className="panel route-detail__gpx">
-            <span className="panel__label">GPX</span>
-            <h2>Fitxer de ruta</h2>
-            <p>
-              Ací pots guardar el GPX de la ruta per a tindre&apos;l disponible dins del detall.
-            </p>
-
+            <span className="panel__label">Mapa i perfil</span>
+            <h2>Mapa i perfil</h2>
             {route.gpxFileName ? (
-              <GpxViewer fileName={route.gpxFileName} gpxContent={route.gpxContent} />
+              <GpxViewer gpxContent={route.gpxContent} />
             ) : (
-              <p className="route-detail__empty">Encara no hi ha cap fitxer GPX guardat.</p>
+              <p className="route-detail__empty">Encara no hi ha un recorregut amb mapa i perfil.</p>
             )}
 
-            <form action={saveRouteGpxAction} className="route-detail__gpx-form">
-              <input type="hidden" name="slug" value={route.slug} />
-              <label className="field">
-                <span>Pujar GPX</span>
-                <input type="file" name="gpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
-              </label>
-              <button className="button button--secondary" type="submit">
-                Guardar GPX
-              </button>
-            </form>
+            <AuthOnly fallback={null}>
+              <form action={saveRouteGpxAction} className="route-detail__gpx-form">
+                <input type="hidden" name="slug" value={route.slug} />
+                <label className="field">
+                  <span>Pujar GPX</span>
+                  <input type="file" name="gpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
+                </label>
+                <button className="button button--secondary" type="submit">
+                  Guardar GPX
+                </button>
+              </form>
+            </AuthOnly>
           </section>
         </div>
       </section>

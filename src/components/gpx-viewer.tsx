@@ -18,7 +18,6 @@ type GpxPoint = {
 };
 
 type GpxViewerProps = {
-  fileName?: string | null;
   gpxContent?: string | null;
 };
 
@@ -315,11 +314,11 @@ function GpxMapLayer({ points, activeDistance, onActiveDistanceChange }: MapLaye
     <>
       <MapBounds points={latLngPoints} />
       <ZoomButtons points={latLngPoints} />
-      <Polyline positions={latLngPoints} pathOptions={{ color: "#1d4b3f", weight: 4, opacity: 0.9 }} />
+      <Polyline positions={latLngPoints} pathOptions={{ color: "#12355a", weight: 4, opacity: 0.9 }} />
       <CircleMarker
         center={firstPoint}
         radius={7}
-        pathOptions={{ color: "#1d4b3f", fillColor: "#1d4b3f", fillOpacity: 1, weight: 2 }}
+        pathOptions={{ color: "#12355a", fillColor: "#12355a", fillOpacity: 1, weight: 2 }}
       >
         <Tooltip permanent direction="top" offset={[0, -2]}>
           Inici
@@ -328,7 +327,7 @@ function GpxMapLayer({ points, activeDistance, onActiveDistanceChange }: MapLaye
       <CircleMarker
         center={lastPoint}
         radius={7}
-        pathOptions={{ color: "#b33b2e", fillColor: "#b33b2e", fillOpacity: 1, weight: 2 }}
+        pathOptions={{ color: "#5fb4e7", fillColor: "#5fb4e7", fillOpacity: 1, weight: 2 }}
       >
         <Tooltip permanent direction="top" offset={[0, -2]}>
           Final
@@ -373,8 +372,8 @@ function ActiveTrackMarker({ points, activeDistance }: { points: GpxPoint[]; act
       center={[nearestPoint.lat, nearestPoint.lon]}
       radius={10}
       pathOptions={{
-        color: "#b33b2e",
-        fillColor: "#b33b2e",
+        color: "#5fb4e7",
+        fillColor: "#5fb4e7",
         fillOpacity: 0.18,
         weight: 2,
       }}
@@ -386,7 +385,7 @@ function ActiveTrackMarker({ points, activeDistance }: { points: GpxPoint[]; act
   );
 }
 
-export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
+export function GpxViewer({ gpxContent }: GpxViewerProps) {
   const model = useMemo(() => {
     if (!gpxContent) {
       return {
@@ -467,13 +466,6 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
   if (model.error) {
     return (
       <div className="gpx-viewer gpx-viewer--empty">
-        <div className="gpx-viewer__header">
-          <div>
-            <p className="gpx-viewer__eyebrow">Visor GPX</p>
-            <h3>Mapa i perfil</h3>
-          </div>
-          {fileName ? <p className="gpx-viewer__meta">{fileName}</p> : null}
-        </div>
         <p className="route-detail__empty">{model.error}</p>
       </div>
     );
@@ -481,14 +473,6 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
 
   return (
     <div className="gpx-viewer">
-      <div className="gpx-viewer__header">
-        <div>
-          <p className="gpx-viewer__eyebrow">Visor GPX</p>
-          <h3>Mapa i perfil</h3>
-        </div>
-        {fileName ? <p className="gpx-viewer__meta">{fileName}</p> : null}
-      </div>
-
       <div className="gpx-viewer__map-shell">
         <MapContainer
           center={[model.points[0].lat, model.points[0].lon]}
@@ -532,14 +516,6 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
       </div>
 
       <div className="gpx-profile">
-        <div className="gpx-profile__header">
-          <div>
-            <p className="gpx-viewer__eyebrow">Perfil</p>
-            <h3>Altimetria</h3>
-          </div>
-          {model.profileHasData ? <p className="gpx-viewer__meta">{Math.round(model.profileMaxElevation)} m</p> : null}
-        </div>
-
         {model.profileHasData ? (
           <div className="gpx-profile__chart-shell">
             <svg
@@ -588,8 +564,8 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
             >
               <defs>
                 <linearGradient id="profile-line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#b33b2e" />
-                  <stop offset="100%" stopColor="#1d4b3f" />
+                  <stop offset="0%" stopColor="#5fb4e7" />
+                  <stop offset="100%" stopColor="#12355a" />
                 </linearGradient>
                 <pattern id="profile-grid" width="24" height="10" patternUnits="userSpaceOnUse">
                   <path d="M 17 0 L 0 0 0 18" fill="none" stroke="rgba(21, 32, 43, 0.08)" strokeWidth="0.35" />
@@ -662,7 +638,7 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
                     y1={PROFILE_PADDING_TOP}
                     x2={activeProfilePoint.x}
                     y2={PROFILE_PADDING_BOTTOM}
-                    stroke="rgba(179, 59, 46, 0.55)"
+                    stroke="rgba(95, 180, 231, 0.55)"
                     strokeWidth="0.5"
                     strokeDasharray="1.5 1.5"
                   />
@@ -670,7 +646,7 @@ export function GpxViewer({ fileName, gpxContent }: GpxViewerProps) {
                     cx={activeProfilePoint.x}
                     cy={activeProfilePoint.y}
                     r="2.4"
-                    fill="#b33b2e"
+                    fill="#5fb4e7"
                     stroke="#ffffff"
                     strokeWidth="0.7"
                   />

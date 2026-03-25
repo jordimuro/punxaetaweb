@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { AuthProvider } from "@/components/auth";
 import { SiteHeader } from "@/components/site-header";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Club Ciclista",
-  description: "Rutes, carrera i equipacions del club ciclista.",
+  title: "Club Ciclista La Punxaeta",
+  description: "Rutes, carrera i equipacions del Club Ciclista La Punxaeta.",
 };
 
 export default function RootLayout({
@@ -16,15 +17,25 @@ export default function RootLayout({
   return (
     <html lang="ca">
       <body>
-        <SiteHeader />
-        <div className="site-shell">
-          <main>{children}</main>
-          <footer className="site-footer">
-            <div className="container site-footer__inner">
-              <p>Club ciclista · Calendari de rutes</p>
-            </div>
-          </footer>
-        </div>
+        <AuthProvider>
+          <SiteHeader />
+          <div className="site-shell">
+            <main>{children}</main>
+            <footer className="site-footer">
+              <div className="container site-footer__inner">
+                <p>Club Ciclista La Punxaeta · Calendari de rutes</p>
+                <a
+                  className="site-footer__social"
+                  href="https://www.instagram.com/lapunxaeta/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Instagram · @lapunxaeta
+                </a>
+              </div>
+            </footer>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
