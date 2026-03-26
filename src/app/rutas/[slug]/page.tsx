@@ -59,32 +59,32 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
                   <dd>{buildDateLabel(route.date)}</dd>
                 </div>
                 <div>
-                  <dt>Esmorzar</dt>
-                  <dd>{route.breakfastPlace}</dd>
+                  <dt>Hora eixida</dt>
+                  <dd>{route.departureTimes.join(" / ")}</dd>
                 </div>
                 <div>
-                  <dt>Distància fins a esmorzar</dt>
-                  <dd>{route.distanceToBreakfast} km</dd>
-                </div>
-                <div>
-                  <dt>Desnivell fins a esmorzar</dt>
-                  <dd>{route.elevationToBreakfast} m</dd>
-                </div>
-                <div>
-                  <dt>Punt d&apos;eixida</dt>
+                  <dt>Lloc d&apos;eixida</dt>
                   <dd>{route.meetingPoint}</dd>
                 </div>
                 <div>
-                  <dt>Eixides</dt>
-                  <dd>{route.departureTimes.join(" i ")}</dd>
-                </div>
-                <div>
-                  <dt>Kms</dt>
+                  <dt>Km totals</dt>
                   <dd>{route.kms} km</dd>
                 </div>
                 <div>
                   <dt>Desnivell total</dt>
                   <dd>{route.elevationGain} m</dd>
+                </div>
+                <div>
+                  <dt>Lloc d&apos;esmorzar</dt>
+                  <dd>{route.breakfastPlace}</dd>
+                </div>
+                <div>
+                  <dt>Km fins esmorzar</dt>
+                  <dd>{route.distanceToBreakfast} km</dd>
+                </div>
+                <div>
+                  <dt>Desnivell fins esmorzar</dt>
+                  <dd>{route.elevationToBreakfast} m</dd>
                 </div>
               </dl>
             </article>
@@ -107,15 +107,22 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             )}
 
             <AuthOnly fallback={null}>
-              <form action={saveRouteGpxAction} className="route-detail__gpx-form">
+              <form action={saveRouteGpxAction} className="upload-shell route-detail__gpx-form">
                 <input type="hidden" name="slug" value={route.slug} />
-                <label className="field">
-                  <span>Pujar GPX</span>
+                <div className="upload-shell__header">
+                  <span className="panel__label">Pujada</span>
+                  <h3>Substituir recorregut</h3>
+                  <p>Selecciona un fitxer GPX per a actualitzar el mapa i el perfil de la ruta.</p>
+                </div>
+                <label className="upload-shell__field">
+                  <span>Fitxer GPX</span>
                   <input type="file" name="gpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
                 </label>
-                <button className="button button--secondary" type="submit">
-                  Guardar GPX
-                </button>
+                <div className="upload-shell__actions">
+                  <button className="button button--secondary" type="submit">
+                    Guardar recorregut
+                  </button>
+                </div>
               </form>
             </AuthOnly>
           </section>

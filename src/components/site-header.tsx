@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { HeaderAuthControl, InstagramLink } from "./auth";
+import { HeaderAuthControl } from "./auth";
 import styles from "./site-header.module.css";
 
 const navigation = [
@@ -11,6 +11,7 @@ const navigation = [
   { href: "/rutas", label: "Rutes" },
   { href: "/carrera-ciclista", label: "Trofeu Vila de Muro-Punxaeta" },
   { href: "/equipaciones", label: "Equipacions" },
+  { href: "/contacte", label: "Contacte" },
 ];
 
 export function SiteHeader() {
@@ -70,7 +71,6 @@ export function SiteHeader() {
               className={`${styles.authControl} ${styles.linkPill}`}
               onNavigate={() => setIsOpen(false)}
             />
-            <InstagramLink className={`${styles.link} ${styles.linkInstagram}`} />
           </nav>
         </div>
       </div>

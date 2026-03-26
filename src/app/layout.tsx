@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@/components/auth";
+import { AuthProvider, InstagramLink } from "@/components/auth";
 import { SiteHeader } from "@/components/site-header";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -23,15 +23,8 @@ export default function RootLayout({
             <main>{children}</main>
             <footer className="site-footer">
               <div className="container site-footer__inner">
-                <p>Club Ciclista La Punxaeta · Calendari de rutes</p>
-                <a
-                  className="site-footer__social"
-                  href="https://www.instagram.com/lapunxaeta/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Instagram · @lapunxaeta
-                </a>
+                <p>Club Ciclista La Punxaeta - Muro</p>
+                <InstagramLink className="site-footer__instagram" label="" />
               </div>
             </footer>
           </div>

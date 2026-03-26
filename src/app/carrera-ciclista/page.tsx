@@ -1,4 +1,41 @@
-export default function CarreraCiclistaPage() {
+import Link from "next/link";
+import { AuthOnly } from "@/components/auth";
+import { getTrofeuEntradesByStatus, getTrofeuStatus, listTrofeuEntrades } from "@/lib/trofeu";
+
+export const dynamic = "force-dynamic";
+
+type TrofeuPageProps = {
+  searchParams: Promise<{ estat?: string }>;
+};
+
+type TrofeuFilter = "totes" | "properes" | "arxiu";
+
+function resolveFilter(raw?: string): TrofeuFilter {
+  if (raw === "properes" || raw === "arxiu") {
+    return raw;
+  }
+
+  return "totes";
+}
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("ca-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00`));
+}
+
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export default async function CarreraCiclistaPage({ searchParams }: TrofeuPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const filter = resolveFilter(resolvedSearchParams?.estat);
+  const items = await getTrofeuEntradesByStatus(filter);
+  const allItems = await listTrofeuEntrades();
+
   return (
     <div className="page">
       <section className="section">
@@ -6,73 +43,61 @@ export default function CarreraCiclistaPage() {
           <div className="page-head page-head--split">
             <div>
               <span className="eyebrow">Trofeu Vila de Muro-Punxaeta</span>
-              <h1>Segona edició</h1>
+              <h1>Entrades i notícies</h1>
             </div>
-            <span className="pill">Diumenge, 6 de setembre de 2026 · 9:00 h</span>
+            <AuthOnly fallback={null}>
+              <Link className="button button--primary" href="/carrera-ciclista/nova">
+                Nova entrada
+              </Link>
+            </AuthOnly>
           </div>
 
-          <div className="route-detail__grid">
-            <article className="panel panel--featured">
-              <span className="panel__label">Presentació</span>
-              <h2>Una jornada de ciclisme base i formació al cor de Muro.</h2>
-              <p>
-                El Club Ciclista La Punxaeta presenta la segona edició del Trofeu Vila de
-                Muro-Punxaeta, una prova pensada per a reunir escoles de ciclisme, categories
-                cadet masculí i femení, i juniors femenines en una matinal esportiva plena
-                d&apos;ambient, esforç i il·lusió.
-              </p>
-              <p>
-                La cita serà el diumenge 6 de setembre de 2026 a les 9:00 del matí, amb una
-                proposta que vol continuar creixent i consolidar-se com una jornada de referència
-                per al ciclisme formatiu de la zona.
-              </p>
-              <dl className="stats stats--stacked">
-                <div>
-                  <dt>Prova</dt>
-                  <dd>Segona edició del Trofeu Vila de Muro-Punxaeta</dd>
-                </div>
-                <div>
-                  <dt>Categories</dt>
-                  <dd>Escoles de ciclisme, cadets xics, xiques i júniors femines</dd>
-                </div>
-                <div>
-                  <dt>Data i hora</dt>
-                  <dd>Diumenge, 6 de setembre de 2026 · 9:00 h</dd>
-                </div>
-                <div>
-                  <dt>Format</dt>
-                  <dd>Matinal ciclista amb participació formativa i esperit de club</dd>
-                </div>
-              </dl>
-            </article>
-
-            <aside className="panel panel--accent">
-              <span className="panel__label">Objectiu</span>
-              <h2>Promocionar el ciclisme de base i donar visibilitat al club.</h2>
-              <p>
-                El trofeu naix amb la voluntat de crear una cita atractiva, ordenada i pròxima,
-                on els més menuts i les categories de formació puguen gaudir d&apos;una jornada
-                esportiva ben organitzada, amb ambient de club i suport del públic local.
-              </p>
-              <div className="notes">
-                <p>
-                  En esta pàgina es podrà ampliar més avant tota la informació del programa,
-                  recorreguts, horaris i detalls organitzatius de la prova.
-                </p>
-              </div>
-            </aside>
+          <div className="filter-bar" aria-label="Filtre d'entrades">
+            {[
+              { href: "/carrera-ciclista", label: "Totes", value: "totes" },
+              { href: "/carrera-ciclista?estat=properes", label: "Properes", value: "properes" },
+              { href: "/carrera-ciclista?estat=arxiu", label: "Arxiu", value: "arxiu" },
+            ].map((item) => (
+              <Link
+                key={item.value}
+                href={item.href}
+                className={`filter-chip ${filter === item.value ? "filter-chip--active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
-          <section className="panel" style={{ marginTop: "1rem" }}>
-            <span className="panel__label">Detalls</span>
-            <h2>Una jornada per a gaudir del ciclisme i fer créixer la prova any rere any.</h2>
-            <p>
-              La segona edició del Trofeu Vila de Muro-Punxaeta vol ser un punt de trobada entre
-              esport, formació i afició. L&apos;ambient al matí, la participació de les escoles i
-              la presència de cadets i júniors reforcen una proposta pensada per a consolidar-se
-              dins del calendari ciclista local.
+          <div className="blog-grid">
+            {items.map((item) => {
+              const status = getTrofeuStatus(item.date);
+              const summary = item.excerpt || stripHtml(item.content).slice(0, 160);
+
+              return (
+                <Link key={item.slug} href={`/carrera-ciclista/${item.slug}`} className="blog-card">
+                  <div className="blog-card__body">
+                    <div className="blog-card__top">
+                      <span className="pill">{status === "properes" ? "Propera" : "Arxiu"}</span>
+                      <span className="pill pill--subtle">{formatDate(item.date)}</span>
+                    </div>
+                    <h2>{item.title || item.slug}</h2>
+                    <p>{summary}</p>
+                    <span className="home-summary-card__cta">Obrir entrada →</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {items.length === 0 ? (
+            <p className="route-detail__empty">Encara no hi ha entrades per a este filtre.</p>
+          ) : null}
+
+          {allItems.length > 0 ? (
+            <p className="route-detail__empty">
+              Total d&apos;entrades al trofeu: {allItems.length}
             </p>
-          </section>
+          ) : null}
         </div>
       </section>
     </div>

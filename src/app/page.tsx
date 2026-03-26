@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { buildDateLabel, getTodayKey, getUpcomingRoutes } from "@/lib/routes";
+import { listEquipacions } from "@/lib/equipacions";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,8 @@ export default async function HomePage() {
   const todayKey = getTodayKey();
   const highlightedRoutes = await getUpcomingRoutes(todayKey, 1);
   const nextRoute = highlightedRoutes[0];
+  const equipmentItems = await listEquipacions();
+  const highlightedEquipment = equipmentItems[0];
 
   return (
     <div className="page">
@@ -24,20 +27,36 @@ export default async function HomePage() {
                 <p>{nextRoute.summary}</p>
                 <dl className="stats stats--compact">
                   <div>
-                    <dt>Eixida</dt>
+                    <dt>Data</dt>
+                    <dd>{buildDateLabel(nextRoute.date)}</dd>
+                  </div>
+                  <div>
+                    <dt>Hora eixida</dt>
                     <dd>{nextRoute.departureTimes.join(" / ")}</dd>
                   </div>
                   <div>
-                    <dt>Esmorzar</dt>
-                    <dd>{nextRoute.breakfastPlace}</dd>
+                    <dt>Lloc d&apos;eixida</dt>
+                    <dd>{nextRoute.meetingPoint}</dd>
                   </div>
                   <div>
-                    <dt>Kms</dt>
+                    <dt>Km totals</dt>
                     <dd>{nextRoute.kms} km</dd>
                   </div>
                   <div>
-                    <dt>Desnivell</dt>
+                    <dt>Desnivell total</dt>
                     <dd>{nextRoute.elevationGain} m</dd>
+                  </div>
+                  <div>
+                    <dt>Lloc d&apos;esmorzar</dt>
+                    <dd>{nextRoute.breakfastPlace}</dd>
+                  </div>
+                  <div>
+                    <dt>Km fins esmorzar</dt>
+                    <dd>{nextRoute.distanceToBreakfast} km</dd>
+                  </div>
+                  <div>
+                    <dt>Desnivell fins esmorzar</dt>
+                    <dd>{nextRoute.elevationToBreakfast} m</dd>
                   </div>
                 </dl>
                 <span className="home-summary-card__cta">Obrir detall →</span>
@@ -76,21 +95,31 @@ export default async function HomePage() {
             <Link className="home-summary-card home-summary-card--equipacions" href="/equipaciones">
               <div className="home-summary-card__top">
                 <span className="pill">Equipacions</span>
-                <span className="pill pill--subtle">Nova col·lecció</span>
+                {highlightedEquipment ? (
+                  <span className="pill pill--subtle">{highlightedEquipment.year}</span>
+                ) : (
+                  <span className="pill pill--subtle">Catàleg</span>
+                )}
               </div>
-              <div className="home-summary-card__media">
-                <Image
-                  src="/equipacions/09-frontal-2.jpeg"
-                  alt="Maillot del Club Ciclista La Punxaeta"
-                  fill
-                  sizes="(max-width: 980px) 100vw, 33vw"
-                />
-              </div>
-              <h3>La imatge del club en blau</h3>
-              <p>
-                Una col·lecció que combina el blau clar més representatiu amb marí i blanc per a
-                donar una presència elegant i reconeixible.
-              </p>
+              {highlightedEquipment ? (
+                <>
+                  <div className="home-summary-card__media">
+                    <Image
+                      src={highlightedEquipment.imagePaths[0]}
+                      alt={highlightedEquipment.name}
+                      fill
+                      sizes="(max-width: 980px) 100vw, 33vw"
+                    />
+                  </div>
+                  <h3>{highlightedEquipment.name}</h3>
+                  <p>{highlightedEquipment.description}</p>
+                </>
+              ) : (
+                <>
+                  <h3>No hi ha equipacions disponibles.</h3>
+                  <p>Quan es cree la primera equipació, apareixerà ací de manera automàtica.</p>
+                </>
+              )}
               <span className="home-summary-card__cta">Veure equipacions →</span>
             </Link>
           </div>
