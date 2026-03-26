@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
 import { NextResponse } from "next/server";
+import { resolveMediaUploadDir } from "@/lib/media-storage";
 
 const allowedFolders = new Set(["trofeu", "equipacions"]);
 
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 
   const extension = extname(file.name) || ".jpg";
   const fileName = `${folder}-${randomUUID()}${extension}`;
-  const absolutePath = join(process.cwd(), "public", folder, "uploads", fileName);
+  const absolutePath = join(resolveMediaUploadDir(folder as "equipacions" | "trofeu"), fileName);
   const publicPath = `/${folder}/uploads/${fileName}`;
 
   mkdirSync(dirname(absolutePath), { recursive: true });

@@ -160,13 +160,7 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
             </label>
 
             <label className="field field--full">
-              <span>Resum</span>
-              <textarea name="summary" defaultValue={state.values.summary} rows={3} placeholder="Descripció curta" />
-              <FieldError message={state.errors.summary} />
-            </label>
-
-            <label className="field field--full">
-              <span>Notes</span>
+              <span>Recorregut</span>
               <textarea
                 name="notes"
                 defaultValue={state.values.notes}

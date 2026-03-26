@@ -298,11 +298,19 @@ function buildRouteErrors(values: RouteFormValues) {
   if (!values.kms.trim()) errors.kms = "Cal indicar els quilòmetres.";
   if (!values.elevationGain.trim()) errors.elevationGain = "Cal indicar el desnivell.";
   if (!values.town.trim()) errors.town = "Cal indicar la població.";
-  if (!values.summary.trim()) errors.summary = "Cal un resum.";
   if (!values.meetingPoint.trim()) errors.meetingPoint = "Cal un punt de trobada.";
-  if (!values.notes.trim()) errors.notes = "Calen notes de ruta.";
+  if (!values.notes.trim()) errors.notes = "Cal un recorregut.";
 
   return errors;
+}
+
+function buildRouteSummary(notes: string) {
+  const normalized = notes.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  return normalized.length > 180 ? `${normalized.slice(0, 177).trimEnd()}...` : normalized;
 }
 
 export function routeToFormValues(route: RouteRecord): RouteFormValues {
@@ -327,6 +335,7 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
 }
 
 export function parseRouteFormData(formData: FormData): RouteFormState {
+  const notes = String(formData.get("notes") ?? "").trim();
   const values: RouteFormValues = {
     id: String(formData.get("id") ?? ""),
     originalSlug: String(formData.get("originalSlug") ?? ""),
@@ -341,9 +350,9 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     kms: String(formData.get("kms") ?? "").trim(),
     elevationGain: String(formData.get("elevationGain") ?? "").trim(),
     town: String(formData.get("town") ?? "").trim(),
-    summary: String(formData.get("summary") ?? "").trim(),
+    summary: buildRouteSummary(notes),
     meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
-    notes: String(formData.get("notes") ?? "").trim(),
+    notes,
   };
 
   const errors = buildRouteErrors(values);

@@ -5,6 +5,7 @@ import { mkdirSync } from "node:fs";
 import { unlink, writeFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
 import { db } from "@/lib/database";
+import { resolveMediaUploadDir } from "@/lib/media-storage";
 
 export type EquipmentRecord = {
   id: string;
@@ -56,8 +57,7 @@ type EquipmentRow = {
   videoPathsJson: string;
 };
 
-const equipmentUploadDir =
-  process.env.EQUIPACIONS_MEDIA_DIR ?? join(process.cwd(), "public", "equipacions", "uploads");
+const equipmentUploadDir = resolveMediaUploadDir("equipacions");
 
 const createTableStatement = db.prepare(`
   CREATE TABLE IF NOT EXISTS equipment (

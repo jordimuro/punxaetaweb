@@ -24,7 +24,6 @@ export default async function HomePage() {
                   <span className="pill pill--subtle">{buildDateLabel(nextRoute.date)}</span>
                 </div>
                 <h3>{nextRoute.name}</h3>
-                <p>{nextRoute.summary}</p>
                 <dl className="stats stats--compact">
                   <div>
                     <dt>Data</dt>

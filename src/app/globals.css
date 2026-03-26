@@ -2129,7 +2129,22 @@ img {
   }
 
   .stats--compact {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.7rem;
+  }
+
+  .stats--compact div {
+    gap: 0.1rem;
+  }
+
+  .stats--compact dt {
+    font-size: 0.68rem;
+    line-height: 1.1;
+  }
+
+  .stats--compact dd {
+    font-size: 0.92rem;
+    line-height: 1.2;
   }
 
   .form-grid {

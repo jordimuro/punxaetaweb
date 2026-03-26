@@ -70,10 +70,9 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
                     <span className="pill pill--subtle">{route.town}</span>
                   </div>
                   <h2>{route.name}</h2>
-                  <p>{route.summary}</p>
                 </div>
 
-                <dl className="stats stats--stacked">
+                <dl className="stats stats--compact route-row__stats">
                   <div>
                     <dt>Data</dt>
                     <dd>{buildDateLabel(route.date)}</dd>

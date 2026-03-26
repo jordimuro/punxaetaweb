@@ -5,6 +5,7 @@ import { mkdirSync } from "node:fs";
 import { unlink, writeFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
 import { db } from "@/lib/database";
+import { resolveMediaUploadDir } from "@/lib/media-storage";
 
 export type TrofeuRecord = {
   id: string;
@@ -51,8 +52,7 @@ type TrofeuRow = {
   pdfPathsJson: string;
 };
 
-const trofeuUploadDir =
-  process.env.TROFEU_MEDIA_DIR ?? join(process.cwd(), "public", "trofeu", "uploads");
+const trofeuUploadDir = resolveMediaUploadDir("trofeu");
 
 const createTableStatement = db.prepare(`
   CREATE TABLE IF NOT EXISTS trofeu_posts (

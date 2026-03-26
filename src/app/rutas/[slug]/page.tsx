@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AuthOnly } from "@/components/auth";
 import { GpxViewer } from "@/components/gpx-viewer";
 import { buildDateLabel, getRouteBySlug } from "@/lib/routes";
-import { deleteRouteAction, saveRouteGpxAction } from "../actions";
+import { deleteRouteAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,6 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
           <div className="page-head page-head--tight">
             <span className="eyebrow">Detall de ruta</span>
             <h1>{route.name}</h1>
-            <p className="lead">{route.summary}</p>
           </div>
 
           <div className="route-detail__grid">
@@ -105,26 +104,6 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             ) : (
               <p className="route-detail__empty">Encara no hi ha un recorregut amb mapa i perfil.</p>
             )}
-
-            <AuthOnly fallback={null}>
-              <form action={saveRouteGpxAction} className="upload-shell route-detail__gpx-form">
-                <input type="hidden" name="slug" value={route.slug} />
-                <div className="upload-shell__header">
-                  <span className="panel__label">Pujada</span>
-                  <h3>Substituir recorregut</h3>
-                  <p>Selecciona un fitxer GPX per a actualitzar el mapa i el perfil de la ruta.</p>
-                </div>
-                <label className="upload-shell__field">
-                  <span>Fitxer GPX</span>
-                  <input type="file" name="gpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
-                </label>
-                <div className="upload-shell__actions">
-                  <button className="button button--secondary" type="submit">
-                    Guardar recorregut
-                  </button>
-                </div>
-              </form>
-            </AuthOnly>
           </section>
         </div>
       </section>
