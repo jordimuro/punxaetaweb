@@ -20,7 +20,10 @@ const dbPath = resolveSqlitePath();
 
 mkdirSync(dirname(dbPath), { recursive: true });
 
-export const db = new Database(dbPath);
+export const db = new Database(dbPath, { timeout: 10000 });
 
+// Railway/Next can open more than one worker during build; give SQLite time
+// to wait for the lock instead of failing immediately with SQLITE_BUSY.
+db.pragma("busy_timeout = 10000");
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
