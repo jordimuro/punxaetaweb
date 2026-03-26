@@ -45,7 +45,15 @@ function ensurePublicSymlink(publicDir: string, storageDir: string) {
     // If it does not exist yet, keep going.
   }
 
-  symlinkSync(storageDir, publicDir, "dir");
+  try {
+    symlinkSync(storageDir, publicDir, "dir");
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "EEXIST") {
+      return;
+    }
+
+    throw error;
+  }
 }
 
 export function resolveMediaUploadDir(folder: MediaFolder) {
