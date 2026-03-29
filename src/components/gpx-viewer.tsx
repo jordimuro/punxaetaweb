@@ -68,6 +68,13 @@ type TileStyleOption = {
 
 const TILE_STYLE_OPTIONS: TileStyleOption[] = [
   {
+    id: "carto-voyager",
+    label: "Carto Voyager",
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 20,
+  },
+  {
     id: "osm-standard",
     label: "OSM Standard",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -87,13 +94,6 @@ const TILE_STYLE_OPTIONS: TileStyleOption[] = [
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
     maxZoom: 17,
-  },
-  {
-    id: "carto-voyager",
-    label: "Carto Voyager",
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    maxZoom: 20,
   },
   {
     id: "esri-world-imagery",
@@ -463,7 +463,7 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
   }, [gpxContent]);
 
   const [activeDistance, setActiveDistance] = useState<number | null>(null);
-  const [tileStyleId, setTileStyleId] = useState<string>(TILE_STYLE_OPTIONS[0].id);
+  const [tileStyleId, setTileStyleId] = useState<string>("carto-voyager");
   const selectedTileStyle = useMemo(
     () => TILE_STYLE_OPTIONS.find((option) => option.id === tileStyleId) ?? TILE_STYLE_OPTIONS[0],
     [tileStyleId],
