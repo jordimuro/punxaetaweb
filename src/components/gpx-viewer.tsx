@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
@@ -57,6 +57,52 @@ const PROFILE_VIEWBOX_WIDTH = 160;
 const PROFILE_VIEWBOX_HEIGHT = 50;
 const PROFILE_CHART_WIDTH = PROFILE_VIEWBOX_WIDTH - PROFILE_PADDING_LEFT - PROFILE_PADDING_RIGHT;
 const PROFILE_CHART_HEIGHT = PROFILE_PADDING_BOTTOM - PROFILE_PADDING_TOP;
+
+type TileStyleOption = {
+  id: string;
+  label: string;
+  url: string;
+  attribution: string;
+  maxZoom?: number;
+};
+
+const TILE_STYLE_OPTIONS: TileStyleOption[] = [
+  {
+    id: "osm-standard",
+    label: "OSM Standard",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  },
+  {
+    id: "osm-hot",
+    label: "OSM Humanitarian",
+    url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France',
+    maxZoom: 20,
+  },
+  {
+    id: "opentopomap",
+    label: "OpenTopoMap",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+    maxZoom: 17,
+  },
+  {
+    id: "carto-voyager",
+    label: "Carto Voyager",
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 20,
+  },
+  {
+    id: "esri-world-imagery",
+    label: "Satélite (Esri)",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: "Tiles &copy; Esri",
+    maxZoom: 19,
+  },
+];
 
 function extractPoints(xmlText: string): ParsedGpx {
   const parser = new DOMParser();
@@ -180,20 +226,6 @@ function buildProfile(points: GpxPoint[]): ProfileModel {
   };
 }
 
-function MapBounds({ points }: { points: Array<[number, number]> }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!points.length) {
-      return;
-    }
-
-    map.fitBounds(points, { padding: [28, 28] });
-  }, [map, points]);
-
-  return null;
-}
-
 function ZoomButtons({ points }: { points: Array<[number, number]> }) {
   const map = useMap();
   const fitToPoints = () => {
@@ -226,7 +258,10 @@ type MapLayerProps = {
 };
 
 function GpxMapLayer({ points, activeDistance, onActiveDistanceChange }: MapLayerProps) {
-  const latLngPoints = points.map((point) => [point.lat, point.lon] as [number, number]);
+  const latLngPoints = useMemo(
+    () => points.map((point) => [point.lat, point.lon] as [number, number]),
+    [points],
+  );
   const firstPoint = latLngPoints[0];
   const lastPoint = latLngPoints[latLngPoints.length - 1];
   const map = useMap();
@@ -312,7 +347,6 @@ function GpxMapLayer({ points, activeDistance, onActiveDistanceChange }: MapLaye
 
   return (
     <>
-      <MapBounds points={latLngPoints} />
       <ZoomButtons points={latLngPoints} />
       <Polyline positions={latLngPoints} pathOptions={{ color: "#12355a", weight: 4, opacity: 0.9 }} />
       <CircleMarker
@@ -429,8 +463,10 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
   }, [gpxContent]);
 
   const [activeDistance, setActiveDistance] = useState<number | null>(null);
-  const [tileStyle, setTileStyle] = useState(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  const [tileStyleId, setTileStyleId] = useState<string>(TILE_STYLE_OPTIONS[0].id);
+  const selectedTileStyle = useMemo(
+    () => TILE_STYLE_OPTIONS.find((option) => option.id === tileStyleId) ?? TILE_STYLE_OPTIONS[0],
+    [tileStyleId],
   );
 
   const activeProfilePoint = useMemo(() => {
@@ -482,8 +518,10 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
           className="gpx-viewer__map"
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url={tileStyle}
+            key={selectedTileStyle.id}
+            attribution={selectedTileStyle.attribution}
+            url={selectedTileStyle.url}
+            maxZoom={selectedTileStyle.maxZoom}
           />
           <GpxMapLayer
             points={model.points}
@@ -500,19 +538,16 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
         <span>
           <i className="gpx-viewer__dot gpx-viewer__dot--end" /> Final
         </span>
-        <button
-          type="button"
-          className="text-link gpx-viewer__tile-switch"
-          onClick={() =>
-            setTileStyle((current) =>
-              current.includes("openstreetmap")
-                ? "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            )
-          }
-        >
-          Canviar mapa
-        </button>
+        <label className="gpx-viewer__tile-switch">
+          <span>Mapa</span>
+          <select value={tileStyleId} onChange={(event) => setTileStyleId(event.target.value)} className="gpx-viewer__tile-select">
+            {TILE_STYLE_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="gpx-profile">

@@ -24,52 +24,17 @@
 
 .brandMark {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 3.55rem;
-  height: 3.1rem;
-  border-radius: 1rem 1rem 1.2rem 1.2rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0 18%, rgba(255, 255, 255, 0) 18% 20%),
-    linear-gradient(180deg, #74c1ef 0%, #5fb4e7 34%, #12355a 35%, #0f2a48 100%);
-  box-shadow:
-    0 12px 30px rgba(95, 180, 231, 0.24),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  width: 3.9rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(20, 56, 94, 0.12);
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(20, 56, 94, 0.14);
   overflow: hidden;
 }
 
-.brandMark::before {
-  content: "";
-  position: absolute;
-  inset: 0.35rem 0.28rem 0.25rem;
-  border-radius: 0.7rem 0.7rem 1rem 1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
-    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 18%, transparent 36%, rgba(255, 255, 255, 0.06) 54%, transparent 72%);
-  mix-blend-mode: screen;
-}
-
-.brandMark::after {
-  content: "";
-  position: absolute;
-  left: 0.34rem;
-  right: 0.34rem;
-  top: 1.52rem;
-  height: 0.42rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(15, 39, 66, 0), rgba(255, 255, 255, 0.72), rgba(15, 39, 66, 0));
-  opacity: 0.9;
-}
-
-.brandMark__core {
-  position: relative;
-  z-index: 1;
-  margin-top: -0.1rem;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-shadow: 0 1px 0 rgba(18, 53, 90, 0.55);
+.brandMarkImage {
+  object-fit: cover;
 }
 
 .brandText {

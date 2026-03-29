@@ -1544,6 +1544,27 @@ img {
   background: var(--accent);
 }
 
+.gpx-viewer__tile-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
+}
+
+.gpx-viewer__tile-switch span {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gpx-viewer__tile-select {
+  border: 1px solid rgba(20, 56, 94, 0.2);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
 .gpx-profile {
   display: grid;
   gap: 0.85rem;
