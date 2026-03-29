@@ -1,7 +1,7 @@
 import "server-only";
 
-import { accessSync, constants as fsConstants, lstatSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { accessSync, constants as fsConstants, mkdirSync } from "node:fs";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 
 export type MediaFolder = "equipacions" | "trofeu";
 
@@ -31,48 +31,46 @@ function canUseRailwayVolume() {
   }
 }
 
-function ensurePublicSymlink(publicDir: string, storageDir: string) {
-  mkdirSync(dirname(publicDir), { recursive: true });
-  mkdirSync(storageDir, { recursive: true });
+function getDatabaseBaseDir() {
+  const rawUrl = process.env.DATABASE_URL;
+  if (!rawUrl) {
+    return null;
+  }
 
+  const rawPath = rawUrl.startsWith("file:") ? rawUrl.slice(5) : rawUrl;
+  if (!isAbsolute(rawPath)) {
+    return null;
+  }
+
+  const baseDir = dirname(rawPath);
   try {
-    const stat = lstatSync(publicDir);
-    if (stat.isSymbolicLink()) {
-      return;
-    }
-    rmSync(publicDir, { recursive: true, force: true });
+    accessSync(baseDir, fsConstants.W_OK);
+    return baseDir;
   } catch {
-    // If it does not exist yet, keep going.
+    return null;
   }
+}
 
-  try {
-    symlinkSync(storageDir, publicDir, "dir");
-  } catch (error) {
-    if (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "EEXIST") {
-      return;
-    }
-
-    throw error;
-  }
+function ensureStorageDir(path: string) {
+  mkdirSync(path, { recursive: true });
+  return path;
 }
 
 export function resolveMediaUploadDir(folder: MediaFolder) {
   const envDir = process.env[folderEnvMap[folder]];
-  const publicDir = getPublicUploadsDir(folder);
 
   if (envDir) {
-    const storageDir = resolve(envDir);
-    if (storageDir !== publicDir) {
-      ensurePublicSymlink(publicDir, storageDir);
-    }
-    return storageDir;
+    return ensureStorageDir(resolve(envDir));
+  }
+
+  const databaseBaseDir = getDatabaseBaseDir();
+  if (databaseBaseDir) {
+    return ensureStorageDir(join(databaseBaseDir, folder, "uploads"));
   }
 
   if (canUseRailwayVolume()) {
-    const storageDir = join(getRailwayBaseDir(), folder, "uploads");
-    ensurePublicSymlink(publicDir, storageDir);
-    return storageDir;
+    return ensureStorageDir(join(getRailwayBaseDir(), folder, "uploads"));
   }
 
-  return publicDir;
+  return ensureStorageDir(getPublicUploadsDir(folder));
 }

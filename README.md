@@ -22,6 +22,14 @@ El projecte usa SQLite.
 
 Si Railway detecta l'entorn i no tens `DATABASE_URL` definit, l'app intenta usar automàticament `/app/data/dev.db`.
 
+## Fitxers multimèdia (trofeu/equipacions)
+
+- Per defecte, les pujades de media es guarden en el mateix volum que la base de dades quan `DATABASE_URL` és un path absolut.
+- En Railway amb volum muntat a `/app/data`, les pujades queden en `/app/data/trofeu/uploads` i `/app/data/equipacions/uploads`.
+- Si vols forçar un directori específic, pots definir:
+  - `TROFEU_MEDIA_DIR=/ruta/persistent/trofeu/uploads`
+  - `EQUIPACIONS_MEDIA_DIR=/ruta/persistent/equipacions/uploads`
+
 ## Desplegament en Railway
 
 - Crea un `Volume`
