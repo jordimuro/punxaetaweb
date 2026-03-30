@@ -35,6 +35,8 @@ export type RouteFormValues = {
   summary: string;
   meetingPoint: string;
   notes: string;
+  gpxFileName: string;
+  gpxContent: string;
 };
 
 export type RouteFormState = {
@@ -250,6 +252,8 @@ export const emptyRouteValues = (): RouteFormValues => ({
   summary: "",
   meetingPoint: "",
   notes: "",
+  gpxFileName: "",
+  gpxContent: "",
 });
 
 export async function listRoutes() {
@@ -331,11 +335,53 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     summary: route.summary,
     meetingPoint: route.meetingPoint,
     notes: route.notes,
+    gpxFileName: route.gpxFileName ?? "",
+    gpxContent: route.gpxContent ?? "",
+  };
+}
+
+function buildUniqueDuplicateSlug(baseSlug: string, takenSlugs: Set<string>) {
+  const trimmedBaseSlug = baseSlug.trim();
+  const duplicateBase = trimmedBaseSlug.endsWith("-copia")
+    ? trimmedBaseSlug
+    : `${trimmedBaseSlug}-copia`;
+
+  if (!takenSlugs.has(duplicateBase)) {
+    return duplicateBase;
+  }
+
+  let suffix = 2;
+  let candidate = `${duplicateBase}-${suffix}`;
+  while (takenSlugs.has(candidate)) {
+    suffix += 1;
+    candidate = `${duplicateBase}-${suffix}`;
+  }
+
+  return candidate;
+}
+
+export async function buildDuplicateRouteValues(slug: string) {
+  const route = await getRouteBySlug(slug);
+  if (!route) {
+    return null;
+  }
+
+  const existingRoutes = await listRoutes();
+  const takenSlugs = new Set(existingRoutes.map((item) => item.slug));
+  const duplicatedSlug = buildUniqueDuplicateSlug(route.slug, takenSlugs);
+
+  return {
+    ...routeToFormValues(route),
+    id: "",
+    originalSlug: "",
+    slug: duplicatedSlug,
+    date: "",
   };
 }
 
 export function parseRouteFormData(formData: FormData): RouteFormState {
   const notes = String(formData.get("notes") ?? "").trim();
+  const gpxContent = String(formData.get("gpxContent") ?? "");
   const values: RouteFormValues = {
     id: String(formData.get("id") ?? ""),
     originalSlug: String(formData.get("originalSlug") ?? ""),
@@ -353,6 +399,8 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     summary: buildRouteSummary(notes),
     meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
     notes,
+    gpxFileName: String(formData.get("gpxFileName") ?? "").trim(),
+    gpxContent,
   };
 
   const errors = buildRouteErrors(values);
@@ -380,8 +428,8 @@ export async function createRoute(values: RouteFormValues) {
     summary: values.summary,
     meetingPoint: values.meetingPoint,
     notes: values.notes,
-    gpxFileName: null,
-    gpxContent: null,
+    gpxFileName: values.gpxFileName || null,
+    gpxContent: values.gpxContent || null,
   };
 
   insertRouteStatement.run(row);

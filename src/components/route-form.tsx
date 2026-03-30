@@ -12,12 +12,16 @@ type RouteFormProps = {
   submitLabel: string;
 };
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message, id }: { message?: string; id?: string }) {
   if (!message) {
     return null;
   }
 
-  return <p className="field__error">{message}</p>;
+  return (
+    <p id={id} className="field__error">
+      {message}
+    </p>
+  );
 }
 
 export function RouteForm({ action, initialValues, title, submitLabel }: RouteFormProps) {
@@ -26,6 +30,7 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
     errors: {},
   });
   const formKey = JSON.stringify(state.values);
+  const dateError = state.errors.date;
 
   return (
     <AuthOnly
@@ -56,6 +61,8 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
         <form key={formKey} action={formAction} className="form-card">
           <input type="hidden" name="id" defaultValue={state.values.id} />
           <input type="hidden" name="originalSlug" defaultValue={state.values.originalSlug} />
+          <input type="hidden" name="gpxFileName" defaultValue={state.values.gpxFileName} />
+          <textarea hidden readOnly name="gpxContent" value={state.values.gpxContent} />
 
           {state.formError ? <p className="form__alert">{state.formError}</p> : null}
 
@@ -74,8 +81,15 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
 
             <label className="field">
               <span>Data</span>
-              <input type="date" name="date" defaultValue={state.values.date} />
-              <FieldError message={state.errors.date} />
+              <input
+                type="date"
+                name="date"
+                defaultValue={state.values.date}
+                className={dateError ? "field-input--error" : undefined}
+                aria-invalid={Boolean(dateError)}
+                aria-describedby={dateError ? "route-date-error" : undefined}
+              />
+              <FieldError id="route-date-error" message={dateError} />
             </label>
 
             <label className="field">

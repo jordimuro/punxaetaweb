@@ -34,6 +34,9 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
                 <Link className="button button--secondary" href={`/rutas/${route.slug}/editar`}>
                   Editar recorregut
                 </Link>
+                <Link className="button button--secondary" href={`/rutas/nova?duplicar=${route.slug}`}>
+                  Duplicar
+                </Link>
                 <form action={deleteRouteAction}>
                   <input type="hidden" name="slug" value={route.slug} />
                   <button className="button button--danger" type="submit">

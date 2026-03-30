@@ -318,6 +318,64 @@ img {
   margin-bottom: 0.95rem;
 }
 
+.route-filters {
+  margin-bottom: 0.85rem;
+  padding: 0.9rem;
+  border-radius: 1.2rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.route-filters__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(180px, 0.7fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.route-filters__search,
+.route-filters__year {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.route-filters__search span,
+.route-filters__year span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.route-filters__search input,
+.route-filters__year select {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  outline: none;
+}
+
+.route-filters__search input:focus,
+.route-filters__year select:focus {
+  border-color: rgba(95, 180, 231, 0.5);
+  box-shadow: 0 0 0 3px rgba(95, 180, 231, 0.14);
+}
+
+.route-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 0.5rem;
+}
+
+.route-subscription-hint {
+  margin: 0.15rem 0 0.8rem;
+}
+
 .filter-chip {
   padding: 0.7rem 1rem;
   border-radius: 999px;
@@ -2009,6 +2067,12 @@ img {
   box-shadow: 0 0 0 3px rgba(95, 180, 231, 0.14);
 }
 
+.field input.field-input--error,
+.field textarea.field-input--error {
+  border-color: rgba(185, 28, 28, 0.45);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+}
+
 .field textarea {
   resize: vertical;
   min-height: 7rem;
@@ -2137,6 +2201,18 @@ img {
 
   .filter-bar {
     margin-bottom: 0.7rem;
+  }
+
+  .route-filters__row {
+    grid-template-columns: 1fr;
+  }
+
+  .route-filters__actions {
+    justify-content: stretch;
+  }
+
+  .route-filters__actions .button {
+    width: 100%;
   }
 
   .detail-toolbar__actions,
