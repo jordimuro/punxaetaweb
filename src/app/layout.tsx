@@ -7,6 +7,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Club Ciclista La Punxaeta",
   description: "Rutes, carrera i equipacions del Club Ciclista La Punxaeta.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
