@@ -26,7 +26,7 @@ export function SiteHeader() {
           <Link href="/" className={styles.brand}>
             <span className={styles.brandMark} aria-hidden="true">
               <Image
-                src="/logo.jpg"
+                src="/logo.png"
                 alt=""
                 fill
                 sizes="64px"

@@ -34,7 +34,9 @@
 }
 
 .brandMarkImage {
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  padding: 0.1rem;
 }
 
 .brandText {
