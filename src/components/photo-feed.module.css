@@ -167,6 +167,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: zoom-in;
 }
 
 .carouselDots {
@@ -189,6 +190,72 @@
 .dotActive {
   background: var(--brand);
   transform: scale(1.2);
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+}
+
+.lightboxBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 10, 18, 0.86);
+}
+
+.lightboxInner {
+  position: relative;
+  z-index: 1;
+  width: min(980px, calc(100vw - 1rem));
+  height: min(90vh, calc(100dvh - 1rem));
+  margin: 0.5rem auto;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--line) 70%, #000 30%);
+  background: #0b1420;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.lightboxTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lightboxNav {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.lightboxAction {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fbff;
+  font-size: 0.8rem;
+  padding: 0.32rem 0.58rem;
+}
+
+.lightboxBody {
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 0.45rem;
+  touch-action: pan-x pan-y;
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 @media (max-width: 760px) {

@@ -59,6 +59,10 @@ export function PhotoFeed() {
   const [editingTitle, setEditingTitle] = useState("");
   const [slideByPost, setSlideByPost] = useState<Record<string, number>>({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [lightbox, setLightbox] = useState<{
+    postId: string;
+    imageIndex: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const displayAuthor = useMemo(() => username ?? "Admin", [username]);
@@ -265,6 +269,28 @@ export function PhotoFeed() {
     }));
   }
 
+  function openLightbox(postId: string, imageIndex: number) {
+    setLightbox({ postId, imageIndex });
+  }
+
+  function closeLightbox() {
+    setLightbox(null);
+  }
+
+  function moveLightbox(step: number) {
+    if (!lightbox) {
+      return;
+    }
+
+    const post = posts.find((item) => item.id === lightbox.postId);
+    if (!post || post.images.length === 0) {
+      return;
+    }
+
+    const nextIndex = (lightbox.imageIndex + step + post.images.length) % post.images.length;
+    setLightbox({ postId: lightbox.postId, imageIndex: nextIndex });
+  }
+
   return (
     <section className={`section ${styles.feedSection}`}>
       <div className="container">
@@ -302,7 +328,6 @@ export function PhotoFeed() {
                 className={styles.hiddenInput}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 multiple
                 onChange={(event) => {
                   void handleCreatePost(event.target.files);
@@ -395,7 +420,12 @@ export function PhotoFeed() {
                     {post.images.map((src, index) => (
                       <figure className={styles.carouselItem} key={`${post.id}-${index}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={`${post.title} - foto ${index + 1}`} loading="lazy" />
+                        <img
+                          src={src}
+                          alt={`${post.title} - foto ${index + 1}`}
+                          loading="lazy"
+                          onClick={() => openLightbox(post.id, index)}
+                        />
                       </figure>
                     ))}
                   </div>
@@ -419,6 +449,44 @@ export function PhotoFeed() {
           </div>
         )}
       </div>
+      {lightbox ? (
+        <div className={styles.lightbox} role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className={styles.lightboxBackdrop}
+            aria-label="Tancar visor"
+            onClick={closeLightbox}
+          />
+          <div className={styles.lightboxInner}>
+            <div className={styles.lightboxTop}>
+              <button type="button" className={styles.lightboxAction} onClick={closeLightbox}>
+                Tancar
+              </button>
+              <div className={styles.lightboxNav}>
+                <button type="button" className={styles.lightboxAction} onClick={() => moveLightbox(-1)}>
+                  ←
+                </button>
+                <button type="button" className={styles.lightboxAction} onClick={() => moveLightbox(1)}>
+                  →
+                </button>
+              </div>
+            </div>
+            <div className={styles.lightboxBody}>
+              {(() => {
+                const post = posts.find((item) => item.id === lightbox.postId);
+                if (!post) {
+                  return null;
+                }
+                const imageSrc = post.images[lightbox.imageIndex];
+                return (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageSrc} alt={`${post.title} - ampliada`} className={styles.lightboxImage} />
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
