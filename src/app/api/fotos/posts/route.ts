@@ -13,10 +13,12 @@ export async function POST(request: Request) {
     title?: string;
     author?: string;
     images?: string[];
+    createdAt?: string;
   };
 
   const title = String(payload.title ?? "").trim();
   const author = String(payload.author ?? "Admin").trim() || "Admin";
+  const createdAt = String(payload.createdAt ?? "").trim();
   const images = Array.isArray(payload.images)
     ? payload.images.map((item) => String(item).trim()).filter(Boolean)
     : [];
@@ -29,6 +31,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Cal pujar almenys una imatge." }, { status: 400 });
   }
 
-  const post = await createPhotoPost({ title, author, images });
+  const post = await createPhotoPost({ title, author, images, createdAt: createdAt || undefined });
   return NextResponse.json({ post }, { status: 201 });
 }

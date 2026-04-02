@@ -24,6 +24,33 @@ type UpdatePostResponse = {
   post: Post;
 };
 
+type EditNewImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+};
+
+type EditDraft = {
+  postId: string;
+  title: string;
+  dateInput: string;
+  images: string[];
+  newImages: EditNewImage[];
+};
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getTouchDistance(
+  touchA: { clientX: number; clientY: number },
+  touchB: { clientX: number; clientY: number },
+) {
+  const dx = touchA.clientX - touchB.clientX;
+  const dy = touchA.clientY - touchB.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 async function uploadPhoto(file: File) {
   const formData = new FormData();
   formData.append("file", file);
@@ -49,21 +76,49 @@ function formatCreatedAt(date: string) {
   }).format(new Date(date));
 }
 
+function toDateInputValue(date: string) {
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  return parsed.toISOString().slice(0, 10);
+}
+
+function toCreatedAtIso(dateInput: string) {
+  return new Date(`${dateInput}T12:00:00.000Z`).toISOString();
+}
+
+function revokeDraftObjectUrls(draft: EditDraft | null) {
+  if (!draft) {
+    return;
+  }
+
+  draft.newImages.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+}
+
 export function PhotoFeed() {
   const { ready, isAuthenticated, username } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState("");
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState("");
   const [slideByPost, setSlideByPost] = useState<Record<string, number>>({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [lightbox, setLightbox] = useState<{
     postId: string;
     imageIndex: number;
   } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
+  const [lightboxPan, setLightboxPan] = useState({ x: 0, y: 0 });
+
+  const pinchDistanceRef = useRef<number | null>(null);
+  const pinchScaleRef = useRef<number>(1);
+  const panStartRef = useRef<{ x: number; y: number; startX: number; startY: number } | null>(null);
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null);
+  const editDraftRef = useRef<EditDraft | null>(null);
+  const createInputRef = useRef<HTMLInputElement | null>(null);
+  const editInputRef = useRef<HTMLInputElement | null>(null);
 
   const displayAuthor = useMemo(() => username ?? "Admin", [username]);
 
@@ -85,7 +140,6 @@ export function PhotoFeed() {
         }
 
         const data = (await response.json()) as PhotosResponse;
-
         if (!active) {
           return;
         }
@@ -111,13 +165,70 @@ export function PhotoFeed() {
     };
   }, []);
 
+  useEffect(() => {
+    editDraftRef.current = editDraft;
+  }, [editDraft]);
+
+  useEffect(
+    () => () => {
+      revokeDraftObjectUrls(editDraftRef.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!lightbox) {
+      return;
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setLightbox(null);
+        setLightboxZoom(1);
+        setLightboxPan({ x: 0, y: 0 });
+      }
+      if (event.key === "ArrowRight") {
+        setLightbox((current) => {
+          if (!current) {
+            return current;
+          }
+          const post = posts.find((item) => item.id === current.postId);
+          if (!post || post.images.length === 0) {
+            return current;
+          }
+          const nextIndex = (current.imageIndex + 1 + post.images.length) % post.images.length;
+          setLightboxZoom(1);
+          setLightboxPan({ x: 0, y: 0 });
+          return { ...current, imageIndex: nextIndex };
+        });
+      }
+      if (event.key === "ArrowLeft") {
+        setLightbox((current) => {
+          if (!current) {
+            return current;
+          }
+          const post = posts.find((item) => item.id === current.postId);
+          if (!post || post.images.length === 0) {
+            return current;
+          }
+          const nextIndex = (current.imageIndex - 1 + post.images.length) % post.images.length;
+          setLightboxZoom(1);
+          setLightboxPan({ x: 0, y: 0 });
+          return { ...current, imageIndex: nextIndex };
+        });
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightbox, posts]);
+
   async function handleCreatePost(files: FileList | null) {
     if (!files || files.length === 0 || saving) {
       return;
     }
 
     const title = newPostTitle.trim() || `Publicació ${posts.length + 1}`;
-
     setSaving(true);
     setErrorMessage("");
 
@@ -141,7 +252,6 @@ export function PhotoFeed() {
       }
 
       const data = (await response.json()) as CreatePostResponse;
-
       setPosts((prev) => [data.post, ...prev]);
       setSlideByPost((prev) => ({ ...prev, [data.post.id]: 0 }));
       setNewPostTitle("");
@@ -152,15 +262,89 @@ export function PhotoFeed() {
     }
   }
 
-  function startEditPost(postId: string, currentTitle: string) {
-    setEditingPostId(postId);
-    setEditingTitle(currentTitle);
+  function startEditPost(post: Post) {
+    revokeDraftObjectUrls(editDraft);
+    setEditDraft({
+      postId: post.id,
+      title: post.title,
+      dateInput: toDateInputValue(post.createdAt),
+      images: [...post.images],
+      newImages: [],
+    });
   }
 
-  async function saveEditPost(postId: string) {
-    const nextTitle = editingTitle.trim();
+  function cancelEditPost() {
+    revokeDraftObjectUrls(editDraft);
+    setEditDraft(null);
+  }
 
-    if (!nextTitle || saving) {
+  function removeExistingImage(index: number) {
+    setEditDraft((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        images: prev.images.filter((_, itemIndex) => itemIndex !== index),
+      };
+    });
+  }
+
+  function addEditFiles(files: FileList | null) {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    setEditDraft((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const nextNewImages = Array.from(files).map((file) => ({
+        id: crypto.randomUUID(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }));
+
+      return {
+        ...prev,
+        newImages: [...prev.newImages, ...nextNewImages],
+      };
+    });
+  }
+
+  function removeNewImage(newImageId: string) {
+    setEditDraft((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const target = prev.newImages.find((item) => item.id === newImageId);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+
+      return {
+        ...prev,
+        newImages: prev.newImages.filter((item) => item.id !== newImageId),
+      };
+    });
+  }
+
+  async function saveEditPost() {
+    if (!editDraft || saving) {
+      return;
+    }
+
+    const nextTitle = editDraft.title.trim();
+    if (!nextTitle) {
+      setErrorMessage("Cal indicar un títol.");
+      return;
+    }
+
+    if (!editDraft.dateInput) {
+      setErrorMessage("Cal indicar una data de publicació.");
       return;
     }
 
@@ -168,43 +352,38 @@ export function PhotoFeed() {
     setErrorMessage("");
 
     try {
-      const response = await fetch(`/api/fotos/posts/${postId}`, {
+      const uploadedNewImages = await Promise.all(editDraft.newImages.map((item) => uploadPhoto(item.file)));
+      const mergedImages = [...editDraft.images, ...uploadedNewImages];
+
+      if (mergedImages.length === 0) {
+        throw new Error("Cal almenys una imatge en la publicació.");
+      }
+
+      const response = await fetch(`/api/fotos/posts/${editDraft.postId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: nextTitle }),
+        body: JSON.stringify({
+          title: nextTitle,
+          createdAt: toCreatedAtIso(editDraft.dateInput),
+          images: mergedImages,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("No s'ha pogut actualitzar la publicació.");
+        throw new Error("No s'ha pogut guardar l'edició.");
       }
 
       const data = (await response.json()) as UpdatePostResponse;
-
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                title: data.post.title,
-              }
-            : post,
-        ),
-      );
-
-      setEditingPostId(null);
-      setEditingTitle("");
+      setPosts((prev) => prev.map((post) => (post.id === data.post.id ? data.post : post)));
+      revokeDraftObjectUrls(editDraft);
+      setEditDraft(null);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Error actualitzant la publicació.");
+      setErrorMessage(error instanceof Error ? error.message : "Error guardant la publicació.");
     } finally {
       setSaving(false);
     }
-  }
-
-  function cancelEditPost() {
-    setEditingPostId(null);
-    setEditingTitle("");
   }
 
   async function handleDeletePost(postId: string) {
@@ -230,6 +409,10 @@ export function PhotoFeed() {
         delete next[postId];
         return next;
       });
+
+      if (editDraft?.postId === postId) {
+        cancelEditPost();
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Error eliminant la publicació.");
     } finally {
@@ -253,7 +436,6 @@ export function PhotoFeed() {
 
   function goToSlide(postId: string, slideIndex: number) {
     const container = document.getElementById(`carousel-${postId}`) as HTMLDivElement | null;
-
     if (!container) {
       return;
     }
@@ -271,10 +453,16 @@ export function PhotoFeed() {
 
   function openLightbox(postId: string, imageIndex: number) {
     setLightbox({ postId, imageIndex });
+    setLightboxZoom(1);
+    setLightboxPan({ x: 0, y: 0 });
   }
 
   function closeLightbox() {
     setLightbox(null);
+    setLightboxZoom(1);
+    setLightboxPan({ x: 0, y: 0 });
+    pinchDistanceRef.current = null;
+    panStartRef.current = null;
   }
 
   function moveLightbox(step: number) {
@@ -289,6 +477,96 @@ export function PhotoFeed() {
 
     const nextIndex = (lightbox.imageIndex + step + post.images.length) % post.images.length;
     setLightbox({ postId: lightbox.postId, imageIndex: nextIndex });
+    setLightboxZoom(1);
+    setLightboxPan({ x: 0, y: 0 });
+  }
+
+  function handleLightboxWheel(event: React.WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setLightboxZoom((prev) => clamp(prev - event.deltaY * 0.0012, 1, 4));
+  }
+
+  function handleLightboxTouchStart(event: React.TouchEvent<HTMLDivElement>) {
+    if (event.touches.length === 2) {
+      const distance = getTouchDistance(event.touches[0], event.touches[1]);
+      pinchDistanceRef.current = distance;
+      pinchScaleRef.current = lightboxZoom;
+      panStartRef.current = null;
+      return;
+    }
+
+    if (event.touches.length === 1 && lightboxZoom > 1) {
+      panStartRef.current = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+        startX: lightboxPan.x,
+        startY: lightboxPan.y,
+      };
+    }
+  }
+
+  function handleLightboxTouchMove(event: React.TouchEvent<HTMLDivElement>) {
+    if (event.touches.length === 2 && pinchDistanceRef.current) {
+      event.preventDefault();
+      const nextDistance = getTouchDistance(event.touches[0], event.touches[1]);
+      const factor = nextDistance / pinchDistanceRef.current;
+      const nextScale = clamp(pinchScaleRef.current * factor, 1, 4);
+      setLightboxZoom(nextScale);
+      return;
+    }
+
+    if (event.touches.length === 1 && panStartRef.current && lightboxZoom > 1) {
+      event.preventDefault();
+      const dx = event.touches[0].clientX - panStartRef.current.x;
+      const dy = event.touches[0].clientY - panStartRef.current.y;
+      setLightboxPan({
+        x: panStartRef.current.startX + dx,
+        y: panStartRef.current.startY + dy,
+      });
+    }
+  }
+
+  function handleLightboxTouchEnd(event: React.TouchEvent<HTMLDivElement>) {
+    if (event.changedTouches.length === 1) {
+      const touch = event.changedTouches[0];
+      const now = Date.now();
+      const previousTap = lastTapRef.current;
+
+      if (!previousTap) {
+        lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
+      } else {
+        const elapsed = now - previousTap.time;
+        const dx = touch.clientX - previousTap.x;
+        const dy = touch.clientY - previousTap.y;
+        const moved = Math.sqrt(dx * dx + dy * dy);
+
+        if (elapsed <= 300 && moved <= 26) {
+          setLightboxZoom((prev) => {
+            const nextZoom = prev > 1 ? 1 : 2.5;
+            if (nextZoom === 1) {
+              setLightboxPan({ x: 0, y: 0 });
+            }
+            return nextZoom;
+          });
+          lastTapRef.current = null;
+        } else {
+          lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
+        }
+      }
+    }
+
+    if (lightboxZoom <= 1) {
+      setLightboxPan({ x: 0, y: 0 });
+    }
+
+    if (pinchDistanceRef.current) {
+      pinchScaleRef.current = lightboxZoom;
+    }
+
+    if (lightboxZoom <= 1) {
+      pinchDistanceRef.current = null;
+      panStartRef.current = null;
+    }
   }
 
   return (
@@ -318,13 +596,13 @@ export function PhotoFeed() {
               <button
                 type="button"
                 className={`button button--primary ${styles.newButton}`}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => createInputRef.current?.click()}
                 disabled={saving}
               >
                 {saving ? "Guardant..." : "Crear"}
               </button>
               <input
-                ref={fileInputRef}
+                ref={createInputRef}
                 className={styles.hiddenInput}
                 type="file"
                 accept="image/*"
@@ -346,7 +624,7 @@ export function PhotoFeed() {
           <div className={styles.feedList}>
             {posts.map((post) => {
               const activeSlide = slideByPost[post.id] ?? 0;
-              const isEditing = editingPostId === post.id;
+              const isEditing = editDraft?.postId === post.id;
 
               return (
                 <article className={styles.postCard} key={post.id}>
@@ -355,7 +633,7 @@ export function PhotoFeed() {
                       <button
                         type="button"
                         className={styles.cornerButton}
-                        onClick={() => startEditPost(post.id, post.title)}
+                        onClick={() => startEditPost(post)}
                         aria-label={`Editar ${post.title}`}
                         title="Editar"
                         disabled={saving}
@@ -376,38 +654,107 @@ export function PhotoFeed() {
                   ) : null}
 
                   <div className={styles.postText}>
-                    {isEditing ? (
+                    {isEditing && editDraft ? (
                       <div className={styles.inlineEdit}>
                         <input
                           className={styles.editInput}
                           type="text"
-                          value={editingTitle}
-                          onChange={(event) => setEditingTitle(event.target.value)}
+                          value={editDraft.title}
+                          onChange={(event) =>
+                            setEditDraft((prev) => (prev ? { ...prev, title: event.target.value } : prev))
+                          }
                           disabled={saving}
                         />
-                        <button
-                          type="button"
-                          className={styles.smallAction}
-                          onClick={() => void saveEditPost(post.id)}
+                        <input
+                          className={styles.editDateInput}
+                          type="date"
+                          value={editDraft.dateInput}
+                          onChange={(event) =>
+                            setEditDraft((prev) => (prev ? { ...prev, dateInput: event.target.value } : prev))
+                          }
                           disabled={saving}
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.smallAction}
-                          onClick={cancelEditPost}
-                          disabled={saving}
-                        >
-                          Cancel
-                        </button>
+                        />
+
+                        <div className={styles.editMediaPanel}>
+                          <div className={styles.editMediaHeader}>Imatges de la publicació</div>
+                          <div className={styles.editMediaGrid}>
+                            {editDraft.images.map((image, index) => (
+                              <div key={`${post.id}-old-${index}`} className={styles.editMediaItem}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={image} alt={`${post.title} - existent ${index + 1}`} />
+                                <button
+                                  type="button"
+                                  className={styles.removeMediaButton}
+                                  onClick={() => removeExistingImage(index)}
+                                  disabled={saving}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                            {editDraft.newImages.map((item) => (
+                              <div key={item.id} className={styles.editMediaItem}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={item.previewUrl} alt="Nova imatge pendent" />
+                                <button
+                                  type="button"
+                                  className={styles.removeMediaButton}
+                                  onClick={() => removeNewImage(item.id)}
+                                  disabled={saving}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className={styles.editMediaActions}>
+                            <button
+                              type="button"
+                              className={styles.smallAction}
+                              onClick={() => editInputRef.current?.click()}
+                              disabled={saving}
+                            >
+                              Afegir fotos
+                            </button>
+                            <input
+                              ref={editInputRef}
+                              className={styles.hiddenInput}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(event) => {
+                                addEditFiles(event.target.files);
+                                event.currentTarget.value = "";
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className={styles.smallAction}
+                              onClick={() => void saveEditPost()}
+                              disabled={saving}
+                            >
+                              Guardar
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.smallAction}
+                              onClick={cancelEditPost}
+                              disabled={saving}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ) : (
-                      <h2>{post.title}</h2>
+                      <>
+                        <h2>{post.title}</h2>
+                        <p>
+                          Publicat per {post.author} · {formatCreatedAt(post.createdAt)}
+                        </p>
+                      </>
                     )}
-                    <p>
-                      Publicat per {post.author} · {formatCreatedAt(post.createdAt)}
-                    </p>
                   </div>
 
                   <div
@@ -449,6 +796,7 @@ export function PhotoFeed() {
           </div>
         )}
       </div>
+
       {lightbox ? (
         <div className={styles.lightbox} role="dialog" aria-modal="true">
           <button
@@ -471,7 +819,13 @@ export function PhotoFeed() {
                 </button>
               </div>
             </div>
-            <div className={styles.lightboxBody}>
+            <div
+              className={styles.lightboxBody}
+              onWheel={handleLightboxWheel}
+              onTouchStart={handleLightboxTouchStart}
+              onTouchMove={handleLightboxTouchMove}
+              onTouchEnd={handleLightboxTouchEnd}
+            >
               {(() => {
                 const post = posts.find((item) => item.id === lightbox.postId);
                 if (!post) {
@@ -479,8 +833,17 @@ export function PhotoFeed() {
                 }
                 const imageSrc = post.images[lightbox.imageIndex];
                 return (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imageSrc} alt={`${post.title} - ampliada`} className={styles.lightboxImage} />
+                  <div className={styles.lightboxImageShell}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageSrc}
+                      alt={`${post.title} - ampliada`}
+                      className={styles.lightboxImage}
+                      style={{
+                        transform: `translate(${lightboxPan.x}px, ${lightboxPan.y}px) scale(${lightboxZoom})`,
+                      }}
+                    />
+                  </div>
                 );
               })()}
             </div>

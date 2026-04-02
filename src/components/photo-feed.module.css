@@ -44,6 +44,15 @@
   color: #0f1c2c;
 }
 
+.editDateInput {
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, #9fb3c8 65%);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  background: #f7fbff;
+  color: #0f1c2c;
+}
+
 .titleInput {
   min-width: 240px;
 }
@@ -129,7 +138,7 @@
 
 .inlineEdit {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.45rem;
   padding-right: 4.5rem;
@@ -138,6 +147,65 @@
 .editInput {
   min-width: 210px;
   flex: 1 1 auto;
+}
+
+.editMediaPanel {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.55rem;
+  background: color-mix(in srgb, var(--panel) 95%, #fff 5%);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.editMediaHeader {
+  color: var(--muted-text);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.editMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.45rem;
+}
+
+.editMediaItem {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.editMediaItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.removeMediaButton {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  border: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(8, 14, 22, 0.72);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.editMediaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
 .carousel {
@@ -243,11 +311,19 @@
 }
 
 .lightboxBody {
-  overflow: auto;
+  overflow: hidden;
   display: grid;
   place-items: center;
   padding: 0.45rem;
-  touch-action: pan-x pan-y;
+  touch-action: none;
+}
+
+.lightboxImageShell {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
 }
 
 .lightboxImage {
@@ -256,6 +332,9 @@
   width: auto;
   height: auto;
   object-fit: contain;
+  transform-origin: center center;
+  transition: transform 120ms ease-out;
+  will-change: transform;
 }
 
 @media (max-width: 760px) {
@@ -290,5 +369,14 @@
   .editInput {
     width: 100%;
     min-width: 0;
+  }
+
+  .editDateInput {
+    width: 100%;
+  }
+
+  .editMediaActions .smallAction {
+    flex: 1 1 calc(50% - 0.2rem);
+    justify-content: center;
   }
 }

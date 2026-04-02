@@ -19,10 +19,7 @@ type PhotoPostRow = {
 };
 
 type PhotoImageRow = {
-  id: string;
-  postId: string;
   imagePath: string;
-  position: number;
 };
 
 const createPostsTableStatement = db.prepare(`
@@ -53,31 +50,57 @@ const countPostsStatement = db.prepare("SELECT COUNT(*) as count FROM photo_post
 const listPostsStatement = db.prepare(
   "SELECT id, title, author, createdAt FROM photo_posts ORDER BY datetime(createdAt) DESC, title ASC",
 );
+const findPostStatement = db.prepare(
+  "SELECT id, title, author, createdAt FROM photo_posts WHERE id = ? LIMIT 1",
+);
 const listImagesStatement = db.prepare(
-  "SELECT id, postId, imagePath, position FROM photo_post_images WHERE postId = ? ORDER BY position ASC, createdAt ASC",
+  "SELECT imagePath FROM photo_post_images WHERE postId = ? ORDER BY position ASC, createdAt ASC",
 );
 const insertPostStatement = db.prepare(`
-  INSERT INTO photo_posts (id, title, author)
-  VALUES (@id, @title, @author)
+  INSERT INTO photo_posts (id, title, author, createdAt)
+  VALUES (@id, @title, @author, @createdAt)
 `);
 const insertImageStatement = db.prepare(`
   INSERT INTO photo_post_images (id, postId, imagePath, position)
   VALUES (@id, @postId, @imagePath, @position)
 `);
-const updatePostTitleStatement = db.prepare(`
+const updatePostStatement = db.prepare(`
   UPDATE photo_posts
-  SET title = @title, updatedAt = CURRENT_TIMESTAMP
+  SET title = @title, createdAt = @createdAt, updatedAt = CURRENT_TIMESTAMP
   WHERE id = @id
 `);
+const deleteImagesByPostStatement = db.prepare("DELETE FROM photo_post_images WHERE postId = ?");
 const deletePostStatement = db.prepare("DELETE FROM photo_posts WHERE id = ?");
 
 const insertPostWithImagesTransaction = db.transaction(
-  (payload: { id: string; title: string; author: string; images: string[] }) => {
+  (payload: { id: string; title: string; author: string; createdAt: string; images: string[] }) => {
     insertPostStatement.run({
       id: payload.id,
       title: payload.title,
       author: payload.author,
+      createdAt: payload.createdAt,
     });
+
+    payload.images.forEach((imagePath, index) => {
+      insertImageStatement.run({
+        id: randomUUID(),
+        postId: payload.id,
+        imagePath,
+        position: index,
+      });
+    });
+  },
+);
+
+const updatePostWithImagesTransaction = db.transaction(
+  (payload: { id: string; title: string; createdAt: string; images: string[] }) => {
+    updatePostStatement.run({
+      id: payload.id,
+      title: payload.title,
+      createdAt: payload.createdAt,
+    });
+
+    deleteImagesByPostStatement.run(payload.id);
 
     payload.images.forEach((imagePath, index) => {
       insertImageStatement.run({
@@ -111,23 +134,6 @@ const seedRows: Array<Omit<PhotoPostRecord, "id" | "createdAt">> = [
   },
 ];
 
-function seedIfNeeded() {
-  const existing = countPostsStatement.get() as { count: number };
-
-  if (existing.count > 0) {
-    return;
-  }
-
-  seedRows.forEach((item) => {
-    insertPostWithImagesTransaction({
-      id: randomUUID(),
-      title: item.title,
-      author: item.author,
-      images: item.images,
-    });
-  });
-}
-
 function toRecord(postRow: PhotoPostRow): PhotoPostRecord {
   const images = listImagesStatement.all(postRow.id) as PhotoImageRow[];
 
@@ -140,6 +146,24 @@ function toRecord(postRow: PhotoPostRow): PhotoPostRecord {
   };
 }
 
+function seedIfNeeded() {
+  const existing = countPostsStatement.get() as { count: number };
+
+  if (existing.count > 0) {
+    return;
+  }
+
+  seedRows.forEach((item) => {
+    insertPostWithImagesTransaction({
+      id: randomUUID(),
+      title: item.title,
+      author: item.author,
+      createdAt: new Date().toISOString(),
+      images: item.images,
+    });
+  });
+}
+
 export async function listPhotoPosts() {
   seedIfNeeded();
   const rows = listPostsStatement.all() as PhotoPostRow[];
@@ -150,6 +174,7 @@ export async function createPhotoPost(payload: {
   title: string;
   author: string;
   images: string[];
+  createdAt?: string;
 }) {
   seedIfNeeded();
 
@@ -158,37 +183,39 @@ export async function createPhotoPost(payload: {
     id: postId,
     title: payload.title,
     author: payload.author,
+    createdAt: payload.createdAt ?? new Date().toISOString(),
     images: payload.images,
   });
 
-  const row = db
-    .prepare("SELECT id, title, author, createdAt FROM photo_posts WHERE id = ? LIMIT 1")
-    .get(postId) as PhotoPostRow;
-
+  const row = findPostStatement.get(postId) as PhotoPostRow;
   return toRecord(row);
 }
 
-export async function updatePhotoPostTitle(postId: string, title: string) {
-  const existing = db
-    .prepare("SELECT id, title, author, createdAt FROM photo_posts WHERE id = ? LIMIT 1")
-    .get(postId) as PhotoPostRow | undefined;
+export async function updatePhotoPost(payload: {
+  id: string;
+  title: string;
+  createdAt: string;
+  images: string[];
+}) {
+  const existing = findPostStatement.get(payload.id) as PhotoPostRow | undefined;
 
   if (!existing) {
     return null;
   }
 
-  updatePostTitleStatement.run({ id: postId, title });
+  updatePostWithImagesTransaction({
+    id: payload.id,
+    title: payload.title,
+    createdAt: payload.createdAt,
+    images: payload.images,
+  });
 
-  return {
-    ...toRecord(existing),
-    title,
-  };
+  const updated = findPostStatement.get(payload.id) as PhotoPostRow;
+  return toRecord(updated);
 }
 
 export async function deletePhotoPost(postId: string) {
-  const existing = db
-    .prepare("SELECT id, title, author, createdAt FROM photo_posts WHERE id = ? LIMIT 1")
-    .get(postId) as PhotoPostRow | undefined;
+  const existing = findPostStatement.get(postId) as PhotoPostRow | undefined;
 
   if (!existing) {
     return null;
