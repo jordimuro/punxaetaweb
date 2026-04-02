@@ -1,143 +1,203 @@
+import Image from "next/image";
 import Link from "next/link";
+import { listPhotoPosts } from "@/lib/photos";
 import { buildDateLabel, getTodayKey, getUpcomingRoutes } from "@/lib/routes";
+import { listTrofeuEntrades } from "@/lib/trofeu";
 
 export const dynamic = "force-dynamic";
 
+function formatTrofeuDate(date: string) {
+  return new Intl.DateTimeFormat("ca-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00`));
+}
+
+function formatCreatedAt(date: string) {
+  return new Intl.DateTimeFormat("ca-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+function buildRouteProfilePreviewDataUri(gpxContent: string | null | undefined) {
+  if (!gpxContent) {
+    return null;
+  }
+
+  const elevations = Array.from(gpxContent.matchAll(/<ele>([^<]+)<\/ele>/g))
+    .map((match) => Number(match[1]))
+    .filter((value) => Number.isFinite(value));
+
+  if (elevations.length < 8) {
+    return null;
+  }
+
+  const targetPoints = 96;
+  const step = Math.max(1, Math.floor(elevations.length / targetPoints));
+  const sampled = elevations.filter((_, index) => index % step === 0).slice(0, targetPoints);
+
+  if (sampled.length < 2) {
+    return null;
+  }
+
+  const min = Math.min(...sampled);
+  const max = Math.max(...sampled);
+  const range = Math.max(1, max - min);
+  const width = 800;
+  const height = 320;
+  const chartTop = 24;
+  const chartBottom = 270;
+  const chartHeight = chartBottom - chartTop;
+
+  const points = sampled.map((elevation, index) => {
+    const x = (index / (sampled.length - 1)) * width;
+    const normalized = (elevation - min) / range;
+    const y = chartBottom - normalized * chartHeight;
+    return { x, y };
+  });
+
+  const linePath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+    .join(" ");
+
+  const areaPath = `${linePath} L ${width} ${chartBottom} L 0 ${chartBottom} Z`;
+
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#e7f1fb"/>
+    </linearGradient>
+    <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#64b7ea" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#64b7ea" stop-opacity="0.10"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#1c5b95"/>
+      <stop offset="100%" stop-color="#0f2f52"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
+  <path d="${areaPath}" fill="url(#area)"/>
+  <path d="${linePath}" fill="none" stroke="url(#line)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`.trim();
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 export default async function HomePage() {
   const todayKey = getTodayKey();
-  const highlightedRoutes = await getUpcomingRoutes(todayKey, 2);
-  const firstRoute = highlightedRoutes[0];
-  const secondRoute = highlightedRoutes[1];
+  const nextRoute = (await getUpcomingRoutes(todayKey, 1))[0];
+  const latestPhotoPost = (await listPhotoPosts())[0];
+  const latestTrofeuPost = (await listTrofeuEntrades())[0];
+  const nextRouteProfilePreview = buildRouteProfilePreviewDataUri(nextRoute?.gpxContent);
 
   return (
     <div className="page">
       <section className="section section--soft">
         <div className="container">
           <div className="home-summary-grid">
-            {firstRoute ? (
-              <Link className="home-summary-card home-summary-card--route" href={`/rutas/${firstRoute.slug}`}>
+            {nextRoute ? (
+              <Link className="home-summary-card home-summary-card--route" href={`/rutas/${nextRoute.slug}`}>
                 <div className="home-summary-card__top">
                   <span className="pill">Pròxima ruta</span>
-                  <span className="pill pill--subtle">{buildDateLabel(firstRoute.date)}</span>
+                  <span className="pill pill--subtle">{buildDateLabel(nextRoute.date)}</span>
                 </div>
-                <h3>{firstRoute.name}</h3>
+                <h3>{nextRoute.name}</h3>
+                {nextRouteProfilePreview ? (
+                  <div className="home-summary-card__media home-summary-card__media--compact">
+                    <Image
+                      src={nextRouteProfilePreview}
+                      alt={`Perfil de ${nextRoute.name}`}
+                      fill
+                      sizes="(max-width: 980px) 100vw, 40vw"
+                      style={{ objectFit: "cover" }}
+                      unoptimized
+                    />
+                  </div>
+                ) : null}
                 <dl className="stats stats--compact">
                   <div>
                     <dt>Data</dt>
-                    <dd>{buildDateLabel(firstRoute.date)}</dd>
+                    <dd>{buildDateLabel(nextRoute.date)}</dd>
                   </div>
                   <div>
                     <dt>Hora eixida</dt>
-                    <dd>{firstRoute.departureTimes.join(" / ")}</dd>
+                    <dd>{nextRoute.departureTimes.join(" / ")}</dd>
                   </div>
                   <div>
                     <dt>Lloc d&apos;eixida</dt>
-                    <dd>{firstRoute.meetingPoint}</dd>
+                    <dd>{nextRoute.meetingPoint}</dd>
                   </div>
                   <div>
                     <dt>Km totals</dt>
-                    <dd>{firstRoute.kms} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell total</dt>
-                    <dd>{firstRoute.elevationGain} m</dd>
-                  </div>
-                  <div>
-                    <dt>Lloc d&apos;esmorzar</dt>
-                    <dd>{firstRoute.breakfastPlace}</dd>
-                  </div>
-                  <div>
-                    <dt>Km fins esmorzar</dt>
-                    <dd>{firstRoute.distanceToBreakfast} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell fins esmorzar</dt>
-                    <dd>{firstRoute.elevationToBreakfast} m</dd>
+                    <dd>{nextRoute.kms} km</dd>
                   </div>
                 </dl>
-                <span className="home-summary-card__cta">Obrir detall →</span>
+                <span className="home-summary-card__cta">Obrir ruta →</span>
               </Link>
             ) : (
               <div className="home-summary-card home-summary-card--route">
                 <span className="pill">Pròxima ruta</span>
                 <h3>No hi ha rutes programades.</h3>
-                <p>Quan es cree la següent ruta apareixerà ací de manera automàtica.</p>
+                <p>Quan es cree la següent ruta, apareixerà ací automàticament.</p>
               </div>
             )}
 
-            {secondRoute ? (
-              <Link className="home-summary-card home-summary-card--route" href={`/rutas/${secondRoute.slug}`}>
+            {latestPhotoPost ? (
+              <Link className="home-summary-card home-summary-card--route" href="/publicacions">
                 <div className="home-summary-card__top">
-                  <span className="pill">Pròxima ruta</span>
-                  <span className="pill pill--subtle">{buildDateLabel(secondRoute.date)}</span>
+                  <span className="pill">Última entrada de fotos</span>
+                  <span className="pill pill--subtle">{formatCreatedAt(latestPhotoPost.createdAt)}</span>
                 </div>
-                <h3>{secondRoute.name}</h3>
-                <dl className="stats stats--compact">
-                  <div>
-                    <dt>Data</dt>
-                    <dd>{buildDateLabel(secondRoute.date)}</dd>
+                <h3>{latestPhotoPost.title}</h3>
+                {latestPhotoPost.images.length > 0 ? (
+                  <div className="home-summary-card__media-strip" aria-label="Galeria de fotos">
+                    {latestPhotoPost.images.map((image, index) => (
+                      <div className="home-summary-card__media-item" key={`${latestPhotoPost.id}-${index}`}>
+                        <Image
+                          src={image}
+                          alt={`${latestPhotoPost.title} - foto ${index + 1}`}
+                          fill
+                          sizes="(max-width: 980px) 80vw, 30vw"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <dt>Hora eixida</dt>
-                    <dd>{secondRoute.departureTimes.join(" / ")}</dd>
-                  </div>
-                  <div>
-                    <dt>Lloc d&apos;eixida</dt>
-                    <dd>{secondRoute.meetingPoint}</dd>
-                  </div>
-                  <div>
-                    <dt>Km totals</dt>
-                    <dd>{secondRoute.kms} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell total</dt>
-                    <dd>{secondRoute.elevationGain} m</dd>
-                  </div>
-                  <div>
-                    <dt>Lloc d&apos;esmorzar</dt>
-                    <dd>{secondRoute.breakfastPlace}</dd>
-                  </div>
-                  <div>
-                    <dt>Km fins esmorzar</dt>
-                    <dd>{secondRoute.distanceToBreakfast} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell fins esmorzar</dt>
-                    <dd>{secondRoute.elevationToBreakfast} m</dd>
-                  </div>
-                </dl>
-                <span className="home-summary-card__cta">Obrir detall →</span>
+                ) : null}
+                <span className="home-summary-card__cta">Obrir fotos →</span>
               </Link>
             ) : (
               <div className="home-summary-card home-summary-card--route">
-                <span className="pill">Pròxima ruta</span>
-                <h3>No hi ha més rutes programades.</h3>
-                <p>Quan es cree una nova ruta, apareixerà ací de manera automàtica.</p>
+                <span className="pill">Última entrada de fotos</span>
+                <h3>Encara no hi ha publicacions de fotos.</h3>
               </div>
             )}
 
-            <Link className="home-summary-card home-summary-card--event" href="/carrera-ciclista">
-              <div className="home-summary-card__top">
-                <span className="pill">Trofeu</span>
-                <span className="pill pill--subtle">6 de setembre de 2026</span>
+            {latestTrofeuPost ? (
+              <Link
+                className="home-summary-card home-summary-card--event"
+                href={`/carrera-ciclista/${latestTrofeuPost.slug}`}
+              >
+                <div className="home-summary-card__top">
+                  <span className="pill">Última entrada del trofeu</span>
+                  <span className="pill pill--subtle">{formatTrofeuDate(latestTrofeuPost.date)}</span>
+                </div>
+                <h3>{latestTrofeuPost.title || latestTrofeuPost.slug}</h3>
+                <p>{latestTrofeuPost.excerpt}</p>
+                <span className="home-summary-card__cta">Llegir entrada →</span>
+              </Link>
+            ) : (
+              <div className="home-summary-card home-summary-card--event">
+                <span className="pill">Última entrada del trofeu</span>
+                <h3>Encara no hi ha notícies del trofeu.</h3>
               </div>
-              <h3>Segona edició del Trofeu Vila de Muro-Punxaeta</h3>
-              <p>
-                Escoles de ciclisme, cadets xics, xiques i júniors femines en una matinal
-                esportiva pensada per a continuar fent créixer la prova.
-              </p>
-              <dl className="stats stats--compact">
-                <div>
-                  <dt>Hora</dt>
-                  <dd>9:00 h</dd>
-                </div>
-                <div>
-                  <dt>Format</dt>
-                  <dd>Matinal</dd>
-                </div>
-              </dl>
-              <span className="home-summary-card__cta">Llegir notícia →</span>
-            </Link>
+            )}
           </div>
         </div>
       </section>

@@ -5,7 +5,7 @@ import { dirname, extname, join } from "node:path";
 import { NextResponse } from "next/server";
 import { resolveMediaUploadDir } from "@/lib/media-storage";
 
-const allowedFolders = new Set(["trofeu", "equipacions"]);
+const allowedFolders = new Set(["trofeu", "equipacions", "fotos"]);
 
 export async function POST(request: Request) {
   const url = new URL(request.url);
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const extension = extname(file.name) || ".jpg";
   const fileName = `${folder}-${randomUUID()}${extension}`;
-  const absolutePath = join(resolveMediaUploadDir(folder as "equipacions" | "trofeu"), fileName);
+  const absolutePath = join(resolveMediaUploadDir(folder as "equipacions" | "trofeu" | "fotos"), fileName);
   const publicPath = `/${folder}/uploads/${fileName}`;
 
   mkdirSync(dirname(absolutePath), { recursive: true });

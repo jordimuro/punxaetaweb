@@ -17,7 +17,7 @@ type ByteRange = {
   end: number;
 };
 
-const allowedFolders = new Set<MediaFolder>(["trofeu", "equipacions"]);
+const allowedFolders = new Set<MediaFolder>(["trofeu", "equipacions", "fotos"]);
 
 const contentTypeByExtension: Record<string, string> = {
   ".jpg": "image/jpeg",

@@ -1,0 +1,227 @@
+.feedSection {
+  padding: 0;
+}
+
+.feedHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+.authActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.createPanel {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 280px;
+  padding: 0.65rem;
+  border: 2px solid #2f77d6;
+  border-radius: 12px;
+  background: color-mix(in srgb, #0f1d2d 86%, var(--panel) 14%);
+}
+
+.newPostLabel {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, #fff 84%, var(--muted-text) 16%);
+  letter-spacing: 0.02em;
+}
+
+.titleInput,
+.editInput {
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, #9fb3c8 65%);
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  background: #f7fbff;
+  color: #0f1c2c;
+}
+
+.titleInput {
+  min-width: 240px;
+}
+
+.titleInput::placeholder {
+  color: #5c6f84;
+}
+
+.titleInput:focus-visible,
+.editInput:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 70%, #ffffff 30%);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+
+.newButton {
+  border-radius: 10px;
+  min-height: 40px;
+  padding-inline: 1rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.feedList {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.statusMessage {
+  margin: 0.25rem 0 0.6rem;
+  color: var(--muted-text);
+  font-size: 0.9rem;
+}
+
+.postCard {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 0.72rem;
+}
+
+.postControls {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.cornerButton,
+.smallAction {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 92%, #ffffff 8%);
+  color: var(--text);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.38rem 0.6rem;
+  cursor: pointer;
+}
+
+.cornerButton:hover,
+.cornerButton:focus-visible,
+.smallAction:hover,
+.smallAction:focus-visible {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.postText h2 {
+  margin: 0;
+  max-width: calc(100% - 8rem);
+}
+
+.postText p {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--muted-text);
+  font-size: 0.82rem;
+}
+
+.inlineEdit {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding-right: 4.5rem;
+}
+
+.editInput {
+  min-width: 210px;
+  flex: 1 1 auto;
+}
+
+.carousel {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carouselItem {
+  margin: 0;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  aspect-ratio: 1 / 1;
+}
+
+.carouselItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carouselDots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 0;
+  background: color-mix(in srgb, var(--line) 78%, #666 22%);
+  cursor: pointer;
+}
+
+.dotActive {
+  background: var(--brand);
+  transform: scale(1.2);
+}
+
+@media (max-width: 760px) {
+  .feedHeader {
+    flex-direction: column;
+  }
+
+  .authActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .titleInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .createPanel {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .newButton {
+    width: 100%;
+  }
+
+  .postText h2 {
+    max-width: 100%;
+    padding-right: 4.5rem;
+  }
+
+  .editInput {
+    width: 100%;
+    min-width: 0;
+  }
+}

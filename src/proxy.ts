@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const mediaFolders = new Set(["trofeu", "equipacions"]);
+const mediaFolders = new Set(["trofeu", "equipacions", "fotos"]);
 
 function toMediaApiPath(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -29,5 +29,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/trofeu/uploads/:path*", "/equipacions/uploads/:path*"],
+  matcher: ["/trofeu/uploads/:path*", "/equipacions/uploads/:path*", "/fotos/uploads/:path*"],
 };
