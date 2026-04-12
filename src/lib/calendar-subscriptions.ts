@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { db } from "@/lib/database";
+import type { Statement } from "better-sqlite3";
 
 type IcsStatsRow = {
   subscribersTotal: number;
@@ -19,23 +20,15 @@ const emptyStats = {
   lastSeenAt: null as string | null,
 };
 
-const createTableStatement = db.prepare(`
-  CREATE TABLE IF NOT EXISTS calendar_subscriptions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    subscriber_hash TEXT NOT NULL UNIQUE,
-    first_seen_at TEXT NOT NULL,
-    last_seen_at TEXT NOT NULL,
-    last_user_agent TEXT,
-    request_count INTEGER NOT NULL DEFAULT 1
-  )
-`);
-
-const createLastSeenIndexStatement = db.prepare(`
-  CREATE INDEX IF NOT EXISTS idx_calendar_subscriptions_last_seen_at
-  ON calendar_subscriptions(last_seen_at)
-`);
+type CalendarSubscriptionStatements = {
+  findSubscriberStatement: Statement;
+  insertSubscriberStatement: Statement;
+  updateSubscriberStatement: Statement;
+  getStatsStatement: Statement;
+};
 
 let schemaReady = false;
+let statements: CalendarSubscriptionStatements | null = null;
 
 function ensureSchema() {
   if (schemaReady) {
@@ -43,8 +36,55 @@ function ensureSchema() {
   }
 
   try {
-    createTableStatement.run();
-    createLastSeenIndexStatement.run();
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS calendar_subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subscriber_hash TEXT NOT NULL UNIQUE,
+        first_seen_at TEXT NOT NULL,
+        last_seen_at TEXT NOT NULL,
+        last_user_agent TEXT,
+        request_count INTEGER NOT NULL DEFAULT 1
+      )
+    `).run();
+
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_calendar_subscriptions_last_seen_at
+      ON calendar_subscriptions(last_seen_at)
+    `).run();
+
+    statements = {
+      findSubscriberStatement: db.prepare(
+        "SELECT id, request_count FROM calendar_subscriptions WHERE subscriber_hash = ?",
+      ),
+      insertSubscriberStatement: db.prepare(`
+        INSERT INTO calendar_subscriptions (
+          subscriber_hash,
+          first_seen_at,
+          last_seen_at,
+          last_user_agent,
+          request_count
+        )
+        VALUES (?, ?, ?, ?, 1)
+      `),
+      updateSubscriberStatement: db.prepare(`
+        UPDATE calendar_subscriptions
+        SET
+          last_seen_at = ?,
+          last_user_agent = ?,
+          request_count = request_count + 1
+        WHERE subscriber_hash = ?
+      `),
+      getStatsStatement: db.prepare(`
+        SELECT
+          COUNT(*) AS subscribersTotal,
+          COUNT(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN 1 END) AS subscribersLast30d,
+          COALESCE(SUM(request_count), 0) AS requestsTotal,
+          COALESCE(SUM(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN request_count ELSE 0 END), 0) AS requestsLast30d,
+          MAX(last_seen_at) AS lastSeenAt
+        FROM calendar_subscriptions
+      `),
+    };
+
     schemaReady = true;
     return true;
   } catch {
@@ -52,51 +92,21 @@ function ensureSchema() {
   }
 }
 
-const findSubscriberStatement = db.prepare(
-  "SELECT id, request_count FROM calendar_subscriptions WHERE subscriber_hash = ?",
-);
-
-const insertSubscriberStatement = db.prepare(`
-  INSERT INTO calendar_subscriptions (
-    subscriber_hash,
-    first_seen_at,
-    last_seen_at,
-    last_user_agent,
-    request_count
-  )
-  VALUES (?, ?, ?, ?, 1)
-`);
-
-const updateSubscriberStatement = db.prepare(`
-  UPDATE calendar_subscriptions
-  SET
-    last_seen_at = ?,
-    last_user_agent = ?,
-    request_count = request_count + 1
-  WHERE subscriber_hash = ?
-`);
-
-const getStatsStatement = db.prepare(`
-  SELECT
-    COUNT(*) AS subscribersTotal,
-    COUNT(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN 1 END) AS subscribersLast30d,
-    COALESCE(SUM(request_count), 0) AS requestsTotal,
-    COALESCE(SUM(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN request_count ELSE 0 END), 0) AS requestsLast30d,
-    MAX(last_seen_at) AS lastSeenAt
-  FROM calendar_subscriptions
-`);
-
 const registerRequestTransaction = db.transaction((subscriberHash: string, nowIso: string, userAgent: string) => {
-  const existing = findSubscriberStatement.get(subscriberHash) as
+  if (!statements) {
+    return;
+  }
+
+  const existing = statements.findSubscriberStatement.get(subscriberHash) as
     | { id: number; request_count: number }
     | undefined;
 
   if (!existing) {
-    insertSubscriberStatement.run(subscriberHash, nowIso, nowIso, userAgent);
+    statements.insertSubscriberStatement.run(subscriberHash, nowIso, nowIso, userAgent);
     return;
   }
 
-  updateSubscriberStatement.run(nowIso, userAgent, subscriberHash);
+  statements.updateSubscriberStatement.run(nowIso, userAgent, subscriberHash);
 });
 
 function normalizeHeaderValue(value: string | null) {
@@ -145,7 +155,11 @@ export function getIcsSubscriptionStats() {
   }
 
   try {
-    const row = getStatsStatement.get() as IcsStatsRow;
+    if (!statements) {
+      return emptyStats;
+    }
+
+    const row = statements.getStatsStatement.get() as IcsStatsRow;
 
     return {
       subscribersTotal: row.subscribersTotal,
