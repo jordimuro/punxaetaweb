@@ -231,6 +231,13 @@ export function HeaderAuthControl({
       <span className="auth-control__status">
         Sessió activa · {username ?? FIXED_USERNAME}
       </span>
+      <Link
+        className="auth-control__link"
+        href="/settings"
+        onClick={onNavigate}
+      >
+        Settings
+      </Link>
       <button
         type="button"
         className="auth-control__button"

@@ -156,8 +156,21 @@
     transform 160ms ease;
 }
 
+.authControl .auth-control__link {
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-weight: 800;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
 .authControl .auth-control__button:hover,
-.authControl .auth-control__button:focus-visible {
+.authControl .auth-control__button:focus-visible,
+.authControl .auth-control__link:hover,
+.authControl .auth-control__link:focus-visible {
   background: rgba(255, 255, 255, 0.34);
   transform: translateY(-1px);
 }
@@ -207,6 +220,11 @@
   }
 
   .authControl .auth-control__button {
+    color: var(--text);
+    background: rgba(95, 180, 231, 0.14);
+  }
+
+  .authControl .auth-control__link {
     color: var(--text);
     background: rgba(95, 180, 231, 0.14);
   }

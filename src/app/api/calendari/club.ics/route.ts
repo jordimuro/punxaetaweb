@@ -1,4 +1,5 @@
 import { listRoutes } from "@/lib/routes";
+import { registerIcsSubscriptionRequest } from "@/lib/calendar-subscriptions";
 
 type ParsedDate = {
   year: number;
@@ -99,6 +100,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  registerIcsSubscriptionRequest(request);
   const routes = await listRoutes();
   const nowStamp = toUtcStamp(new Date());
   const baseUrl = buildBaseUrl(request);
