@@ -3,12 +3,13 @@ import "server-only";
 import { accessSync, constants as fsConstants, mkdirSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
-export type MediaFolder = "equipacions" | "trofeu" | "fotos";
+export type MediaFolder = "equipacions" | "trofeu" | "fotos" | "gpx";
 
 const folderEnvMap: Record<MediaFolder, string> = {
   equipacions: "EQUIPACIONS_MEDIA_DIR",
   trofeu: "TROFEU_MEDIA_DIR",
   fotos: "FOTOS_MEDIA_DIR",
+  gpx: "GPX_MEDIA_DIR",
 };
 
 function getPublicUploadsDir(folder: MediaFolder) {

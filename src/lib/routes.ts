@@ -1,7 +1,11 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import { mkdirSync } from "node:fs";
+import { readFile, unlink, writeFile } from "node:fs/promises";
+import { basename, extname, join } from "node:path";
 import { db } from "@/lib/database";
+import { resolveMediaUploadDir } from "@/lib/media-storage";
 import {
   formatRouteDate,
   getTodayKey,
@@ -16,6 +20,9 @@ export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationT
   id: string;
   distanceToBreakfast: number;
   elevationToBreakfast: number;
+  gpxFileName: string | null;
+  gpxPath: string | null;
+  gpxContent: string | null;
 };
 
 export type RouteFormValues = {
@@ -36,6 +43,7 @@ export type RouteFormValues = {
   meetingPoint: string;
   notes: string;
   gpxFileName: string;
+  gpxPath: string;
   gpxContent: string;
 };
 
@@ -62,6 +70,7 @@ type RouteRow = {
   meetingPoint: string;
   notes: string;
   gpxFileName: string | null;
+  gpxPath: string | null;
   gpxContent: string | null;
 };
 
@@ -83,6 +92,7 @@ const createTableStatement = db.prepare(`
     meetingPoint TEXT NOT NULL,
     notes TEXT NOT NULL,
     gpxFileName TEXT,
+    gpxPath TEXT,
     gpxContent TEXT,
     createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -103,32 +113,32 @@ function ensureColumn(name: string, definition: string) {
 ensureSchema();
 
 const listRoutesStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes ORDER BY date ASC, name ASC",
+  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent FROM routes ORDER BY date ASC, name ASC",
 );
 const countRoutesStatement = db.prepare("SELECT COUNT(*) as count FROM routes");
 const findRouteStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxContent FROM routes WHERE slug = ? LIMIT 1",
+  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent FROM routes WHERE slug = ? LIMIT 1",
 );
 const insertRouteStatement = db.prepare(`
   INSERT INTO routes (
     id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, gpxFileName, gpxContent
+    summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent
   ) VALUES (
     @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @gpxFileName, @gpxContent
+    @summary, @meetingPoint, @notes, @gpxFileName, @gpxPath, @gpxContent
   )
 `);
 const seedInsertRouteStatement = db.prepare(`
   INSERT OR IGNORE INTO routes (
     id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, gpxFileName, gpxContent
+    summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent
   ) VALUES (
     @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @gpxFileName, @gpxContent
+    @summary, @meetingPoint, @notes, @gpxFileName, @gpxPath, @gpxContent
   )
 `);
 const updateRouteStatement = db.prepare(`
@@ -148,6 +158,7 @@ const updateRouteStatement = db.prepare(`
     meetingPoint = @meetingPoint,
     notes = @notes,
     gpxFileName = @gpxFileName,
+    gpxPath = @gpxPath,
     gpxContent = @gpxContent,
     updatedAt = CURRENT_TIMESTAMP
   WHERE id = @id
@@ -164,7 +175,40 @@ function ensureSchema() {
   ensureColumn("distanceToBreakfast", "distanceToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("elevationToBreakfast", "elevationToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("gpxFileName", "gpxFileName TEXT");
+  ensureColumn("gpxPath", "gpxPath TEXT");
   ensureColumn("gpxContent", "gpxContent TEXT");
+}
+
+const gpxUploadDir = resolveMediaUploadDir("gpx");
+const gpxPublicPrefix = "/gpx/uploads/";
+
+function sanitizeFileName(value: string) {
+  return value.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+function buildGpxStorageTarget(originalFileName: string, slug: string) {
+  const extension = extname(originalFileName).toLowerCase() || ".gpx";
+  const normalizedExtension = extension === ".xml" ? ".gpx" : extension;
+  const safeSlug = sanitizeFileName(slug) || "ruta";
+  const fileName = `${safeSlug}-${randomUUID()}${normalizedExtension}`;
+  return {
+    fileName,
+    absolutePath: join(gpxUploadDir, fileName),
+    publicPath: `${gpxPublicPrefix}${fileName}`,
+  };
+}
+
+function resolveAbsoluteGpxPath(publicPath: string | null | undefined) {
+  if (!publicPath || !publicPath.startsWith(gpxPublicPrefix)) {
+    return null;
+  }
+
+  const fileName = basename(publicPath);
+  if (!fileName || fileName === "." || fileName === "..") {
+    return null;
+  }
+
+  return join(gpxUploadDir, fileName);
 }
 
 function seedRoutesIfNeeded() {
@@ -193,6 +237,7 @@ function seedRoutesIfNeeded() {
       meetingPoint: route.meetingPoint,
       notes: route.notes,
       gpxFileName: route.gpxFileName ?? null,
+      gpxPath: route.gpxPath ?? null,
       gpxContent: route.gpxContent ?? null,
     })),
   );
@@ -219,6 +264,7 @@ function toRouteRecord(route: RouteRow): RouteRecord {
     meetingPoint: route.meetingPoint,
     notes: route.notes,
     gpxFileName: route.gpxFileName,
+    gpxPath: route.gpxPath,
     gpxContent: route.gpxContent,
   };
 }
@@ -253,6 +299,7 @@ export const emptyRouteValues = (): RouteFormValues => ({
   meetingPoint: "",
   notes: "",
   gpxFileName: "",
+  gpxPath: "",
   gpxContent: "",
 });
 
@@ -336,6 +383,7 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     meetingPoint: route.meetingPoint,
     notes: route.notes,
     gpxFileName: route.gpxFileName ?? "",
+    gpxPath: route.gpxPath ?? "",
     gpxContent: route.gpxContent ?? "",
   };
 }
@@ -400,6 +448,7 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
     notes,
     gpxFileName: String(formData.get("gpxFileName") ?? "").trim(),
+    gpxPath: String(formData.get("gpxPath") ?? "").trim(),
     gpxContent,
   };
 
@@ -429,6 +478,7 @@ export async function createRoute(values: RouteFormValues) {
     meetingPoint: values.meetingPoint,
     notes: values.notes,
     gpxFileName: values.gpxFileName || null,
+    gpxPath: values.gpxPath || null,
     gpxContent: values.gpxContent || null,
   };
 
@@ -439,9 +489,9 @@ export async function createRoute(values: RouteFormValues) {
 export async function updateRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
   const existing = values.id
-    ? (db.prepare(
-        "SELECT gpxFileName, gpxContent FROM routes WHERE id = ? LIMIT 1",
-      ).get(values.id) as Pick<RouteRow, "gpxFileName" | "gpxContent"> | undefined)
+      ? (db.prepare(
+        "SELECT gpxFileName, gpxPath, gpxContent FROM routes WHERE id = ? LIMIT 1",
+      ).get(values.id) as Pick<RouteRow, "gpxFileName" | "gpxPath" | "gpxContent"> | undefined)
     : undefined;
   const row: RouteRow = {
     id: values.id,
@@ -459,6 +509,7 @@ export async function updateRoute(values: RouteFormValues) {
     meetingPoint: values.meetingPoint,
     notes: values.notes,
     gpxFileName: existing?.gpxFileName ?? null,
+    gpxPath: existing?.gpxPath ?? null,
     gpxContent: existing?.gpxContent ?? null,
   };
 
@@ -473,7 +524,13 @@ export async function deleteRoute(slug: string) {
     return null;
   }
 
+  const previousGpxAbsolutePath = resolveAbsoluteGpxPath(existing.gpxPath);
   db.prepare("DELETE FROM routes WHERE slug = ?").run(slug);
+
+  if (previousGpxAbsolutePath) {
+    await unlink(previousGpxAbsolutePath).catch(() => undefined);
+  }
+
   return toRouteRecord(existing);
 }
 
@@ -485,11 +542,17 @@ export async function saveRouteGpx(slug: string, file: File) {
     return null;
   }
 
-  const gpxContent = await file.text();
+  mkdirSync(gpxUploadDir, { recursive: true });
+  const nextGpxTarget = buildGpxStorageTarget(file.name, slug);
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(nextGpxTarget.absolutePath, fileBuffer);
+
+  const previousGpxAbsolutePath = resolveAbsoluteGpxPath(existing.gpxPath);
   const updateGpxStatement = db.prepare(`
     UPDATE routes SET
       gpxFileName = @gpxFileName,
-      gpxContent = @gpxContent,
+      gpxPath = @gpxPath,
+      gpxContent = NULL,
       updatedAt = CURRENT_TIMESTAMP
     WHERE slug = @slug
   `);
@@ -497,14 +560,32 @@ export async function saveRouteGpx(slug: string, file: File) {
   updateGpxStatement.run({
     slug,
     gpxFileName: file.name,
-    gpxContent,
+    gpxPath: nextGpxTarget.publicPath,
   });
+
+  if (previousGpxAbsolutePath) {
+    await unlink(previousGpxAbsolutePath).catch(() => undefined);
+  }
 
   return toRouteRecord({
     ...existing,
     gpxFileName: file.name,
-    gpxContent,
+    gpxPath: nextGpxTarget.publicPath,
+    gpxContent: null,
   });
+}
+
+export async function getRouteGpxContent(route: { gpxPath?: string | null; gpxContent?: string | null }) {
+  const absolutePath = resolveAbsoluteGpxPath(route.gpxPath);
+  if (absolutePath) {
+    try {
+      return await readFile(absolutePath, "utf8");
+    } catch {
+      return route.gpxContent ?? null;
+    }
+  }
+
+  return route.gpxContent ?? null;
 }
 
 export function buildDateLabel(date: string) {

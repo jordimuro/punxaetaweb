@@ -33,8 +33,8 @@ export default async function RoutesCalendarSubscriptionPage() {
             <span className="eyebrow">Subscripció</span>
             <h1>Calendari de rutes</h1>
             <p className="lead">
-              Subscriu-te al calendari del club per a tindre les rutes en el mòbil i en el teu
-              ordinador.
+              Subscriu-te al calendari del club per a tindre les rutes sempre
+              actualitzades en el mòbil o en l’ordinador.
             </p>
           </div>
 
@@ -42,8 +42,8 @@ export default async function RoutesCalendarSubscriptionPage() {
             <span className="panel__label">URL del feed</span>
             <h2>Enllaç de subscripció (.ics)</h2>
             <p>
-              Copia esta URL i utilitza-la en Google Calendar, Apple Calendar o Outlook per a fer la
-              subscripció.
+              Copia esta URL per a subscriure’t al calendari des de Google
+              Calendar o Apple Calendar.
             </p>
             <p>
               <a className="text-link" href={calendarFeedUrl}>
@@ -52,29 +52,64 @@ export default async function RoutesCalendarSubscriptionPage() {
             </p>
           </section>
 
-          <div className="grid grid--3">
+          <div className="grid grid--2">
             <article className="card">
-              <h3>Google Calendar</h3>
+              <h3>Telèfon Android</h3>
               <p>
-                En el panell esquerre, ves a Altres calendaris, prem + i selecciona Des de URL.
-                Pega l&apos;enllaç i confirma.
+                En Android amb Google Calendar, este enllaç no se sol afegir
+                directament des de l’app del mòbil. El procés habitual és fer-ho
+                primer des d’un ordinador amb el mateix compte de Google.
               </p>
+
+              <ol>
+                <li>Obri Google Calendar des d’un ordinador.</li>
+                <li>
+                  En la columna esquerra, ves a{" "}
+                  <strong>Altres calendaris</strong>.
+                </li>
+                <li>
+                  Prem <strong>+</strong> i selecciona{" "}
+                  <strong>Des de URL</strong>.
+                </li>
+                <li>Apega l’enllaç del calendari.</li>
+                <li>
+                  Prem <strong>Afegir calendari</strong>.
+                </li>
+                <li>
+                  Després, obri Google Calendar en el teu Android i comprova que
+                  el calendari apareix en el menú lateral.
+                </li>
+              </ol>
             </article>
 
             <article className="card">
-              <h3>Apple Calendar</h3>
+              <h3>iPhone / Apple Calendar</h3>
               <p>
-                En el menú superior, tria Arxiu &gt; Nova subscripció de calendari, pega l&apos;URL
-                i guarda la subscripció.
+                En iPhone pots afegir un calendari subscrit directament des de
+                la configuració del dispositiu.
               </p>
-            </article>
 
-            <article className="card">
-              <h3>Outlook</h3>
-              <p>
-                En Afegir calendari, selecciona Subscriure&apos;s des de web, pega l&apos;URL i
-                assigna un nom al calendari.
-              </p>
+              <ol>
+                <li>Copia l’enllaç ICS del calendari.</li>
+                <li>
+                  Ves a{" "}
+                  <strong>
+                    Configuració &gt; Apps &gt; Calendari &gt; Comptes
+                  </strong>
+                  .
+                </li>
+                <li>
+                  Prem <strong>Afegir compte</strong> i després{" "}
+                  <strong>Altre</strong>.
+                </li>
+                <li>
+                  Selecciona <strong>Afegir calendari subscrit</strong>.
+                </li>
+                <li>
+                  Apega l’URL i prem <strong>Següent</strong>.
+                </li>
+                <li>Guarda els canvis.</li>
+              </ol>
             </article>
           </div>
         </div>

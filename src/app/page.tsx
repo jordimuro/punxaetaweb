@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { listPhotoPosts } from "@/lib/photos";
-import { buildDateLabel, getTodayKey, getUpcomingRoutes } from "@/lib/routes";
+import { buildDateLabel, getRouteGpxContent, getTodayKey, getUpcomingRoutes } from "@/lib/routes";
 import { listTrofeuEntrades } from "@/lib/trofeu";
 
 export const dynamic = "force-dynamic";
@@ -94,7 +94,8 @@ export default async function HomePage() {
   const nextRoute = (await getUpcomingRoutes(todayKey, 1))[0];
   const latestPhotoPost = (await listPhotoPosts())[0];
   const latestTrofeuPost = (await listTrofeuEntrades())[0];
-  const nextRouteProfilePreview = buildRouteProfilePreviewDataUri(nextRoute?.gpxContent);
+  const nextRouteGpxContent = nextRoute ? await getRouteGpxContent(nextRoute) : null;
+  const nextRouteProfilePreview = buildRouteProfilePreviewDataUri(nextRouteGpxContent);
 
   return (
     <div className="page">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AuthOnly } from "@/components/auth";
 import { GpxViewer } from "@/components/gpx-viewer";
-import { buildDateLabel, getRouteBySlug } from "@/lib/routes";
+import { buildDateLabel, getRouteBySlug, getRouteGpxContent } from "@/lib/routes";
 import { deleteRouteAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +18,8 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
   if (!route) {
     notFound();
   }
+
+  const gpxContent = await getRouteGpxContent(route);
 
   return (
     <div className="page">
@@ -103,7 +105,7 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             <span className="panel__label">Mapa i perfil</span>
             <h2>Mapa i perfil</h2>
             {route.gpxFileName ? (
-              <GpxViewer gpxContent={route.gpxContent} />
+              <GpxViewer gpxContent={gpxContent} gpxFileName={route.gpxFileName} />
             ) : (
               <p className="route-detail__empty">Encara no hi ha un recorregut amb mapa i perfil.</p>
             )}

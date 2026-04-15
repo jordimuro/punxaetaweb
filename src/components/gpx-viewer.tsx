@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
@@ -19,6 +19,7 @@ type GpxPoint = {
 
 type GpxViewerProps = {
   gpxContent?: string | null;
+  gpxFileName?: string | null;
 };
 
 type ParsedGpx = {
@@ -419,7 +420,7 @@ function ActiveTrackMarker({ points, activeDistance }: { points: GpxPoint[]; act
   );
 }
 
-export function GpxViewer({ gpxContent }: GpxViewerProps) {
+export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
   const model = useMemo(() => {
     if (!gpxContent) {
       return {
@@ -499,6 +500,34 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
     setActiveDistance(point.distance);
   };
 
+  const downloadFileName = useMemo(() => {
+    const trimmed = (gpxFileName ?? "").trim();
+    if (!trimmed) {
+      return "track.gpx";
+    }
+
+    return trimmed.toLowerCase().endsWith(".gpx") ? trimmed : `${trimmed}.gpx`;
+  }, [gpxFileName]);
+
+  const downloadUrl = useMemo(() => {
+    if (!gpxContent) {
+      return null;
+    }
+
+    const blob = new Blob([gpxContent], { type: "application/gpx+xml;charset=utf-8" });
+    return URL.createObjectURL(blob);
+  }, [gpxContent]);
+
+  useEffect(() => {
+    if (!downloadUrl) {
+      return;
+    }
+
+    return () => {
+      URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
   if (model.error) {
     return (
       <div className="gpx-viewer gpx-viewer--empty">
@@ -548,6 +577,11 @@ export function GpxViewer({ gpxContent }: GpxViewerProps) {
             ))}
           </select>
         </label>
+        {downloadUrl ? (
+          <a className="button button--secondary button--small" href={downloadUrl} download={downloadFileName}>
+            Descarregar track
+          </a>
+        ) : null}
       </div>
 
       <div className="gpx-profile">

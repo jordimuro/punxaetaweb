@@ -13,6 +13,7 @@ export type CyclingRoute = {
   meetingPoint: string;
   notes: string;
   gpxFileName?: string | null;
+  gpxPath?: string | null;
   gpxContent?: string | null;
 };
 

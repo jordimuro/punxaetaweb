@@ -17,7 +17,7 @@ type ByteRange = {
   end: number;
 };
 
-const allowedFolders = new Set<MediaFolder>(["trofeu", "equipacions", "fotos"]);
+const allowedFolders = new Set<MediaFolder>(["trofeu", "equipacions", "fotos", "gpx"]);
 
 const contentTypeByExtension: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -32,6 +32,8 @@ const contentTypeByExtension: Record<string, string> = {
   ".ogg": "video/ogg",
   ".mov": "video/quicktime",
   ".pdf": "application/pdf",
+  ".gpx": "application/gpx+xml",
+  ".xml": "application/xml",
 };
 
 function isSafeSegment(segment: string) {

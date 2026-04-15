@@ -62,6 +62,7 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
           <input type="hidden" name="id" defaultValue={state.values.id} />
           <input type="hidden" name="originalSlug" defaultValue={state.values.originalSlug} />
           <input type="hidden" name="gpxFileName" defaultValue={state.values.gpxFileName} />
+          <input type="hidden" name="gpxPath" defaultValue={state.values.gpxPath} />
           <textarea hidden readOnly name="gpxContent" value={state.values.gpxContent} />
 
           {state.formError ? <p className="form__alert">{state.formError}</p> : null}
