@@ -2176,14 +2176,6 @@ img {
   z-index: 1;
 }
 
-.climb-zone__label {
-  fill: rgba(0, 0, 0, 0.82);
-  font-size: 4.5px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  pointer-events: none;
-}
-
 .climb-axis__label {
   fill: rgba(21, 32, 43, 0.55);
   font-size: 3px;

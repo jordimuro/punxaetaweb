@@ -411,8 +411,7 @@ function ClimbMiniProfile({ points }: { points: TrackPoint[] }) {
     }
 
     // Build SVG data for each merged color zone
-    type ZoneData = { fillPath: string; color: string; grad: number; labelX: number; labelY: number; wide: boolean };
-    const zones: ZoneData[] = merged.map((zone) => {
+    const zones = merged.map((zone) => {
       const zonePts = points.filter(
         (p) => p.distance > zone.start && p.distance < zone.end,
       );
@@ -428,12 +427,7 @@ function ClimbMiniProfile({ points }: { points: TrackPoint[] }) {
       const ex = toX(zone.end).toFixed(2);
       const fillPath = `${topPath} L ${ex} ${MINI_CHART_BOTTOM} L ${sx} ${MINI_CHART_BOTTOM} Z`;
 
-      const midDist = (zone.start + zone.end) / 2;
-      const labelX = toX(midDist);
-      const labelY = MINI_CHART_BOTTOM - 3;
-      const zoneWidth = toX(zone.end) - toX(zone.start);
-
-      return { fillPath, color: zone.color, grad: zone.grad, labelX, labelY, wide: zoneWidth > 12 };
+      return { fillPath, color: zone.color };
     });
 
     // Thin white divider at merged zone boundaries, max 20 dividers total
@@ -495,20 +489,6 @@ function ClimbMiniProfile({ points }: { points: TrackPoint[] }) {
           strokeWidth="0.2"
         />
       ))}
-      {/* Gradient % labels inside wide zones */}
-      {data.zones.map((zone, i) =>
-        zone.wide && zone.grad > 0.5 ? (
-          <text
-            key={`lbl-${i}`}
-            x={zone.labelX.toFixed(2)}
-            y={zone.labelY.toFixed(2)}
-            textAnchor="middle"
-            className="climb-zone__label"
-          >
-            {zone.grad.toFixed(1)}%
-          </text>
-        ) : null,
-      )}
       {/* Chart border */}
       <line
         x1={MINI_PAD_LEFT}
