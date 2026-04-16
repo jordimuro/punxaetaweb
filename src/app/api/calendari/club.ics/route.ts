@@ -153,6 +153,9 @@ export async function GET(request: Request) {
       calendarLines.push(
         `DTSTART;TZID=Europe/Madrid:${formatDateTimeMadrid(parsedDate, parsedTime.hour, parsedTime.minute)}`,
       );
+      calendarLines.push(
+        `DTEND;TZID=Europe/Madrid:${formatDateTimeMadrid(parsedDate, 13, 0)}`,
+      );
     } else {
       calendarLines.push(`DTSTART;VALUE=DATE:${formatDateOnly(parsedDate)}`);
     }
