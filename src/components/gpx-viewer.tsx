@@ -50,6 +50,18 @@ type ProfileModel = {
   points: ProfilePoint[];
 };
 
+type ClimbSegment = {
+  startDistance: number;
+  endDistance: number;
+  startEle: number;
+  endEle: number;
+  gain: number;
+  length: number;
+  avgGradient: number;
+  maxGradient: number;
+  points: TrackPoint[];
+};
+
 const PROFILE_PADDING_LEFT = 4;
 const PROFILE_PADDING_RIGHT = 4;
 const PROFILE_PADDING_TOP = 8;
@@ -225,6 +237,412 @@ function buildProfile(points: GpxPoint[]): ProfileModel {
     trackPoints,
     points: mappedPoints,
   };
+}
+
+// --- Climb detection ---
+
+const GRADIENT_ZONES: { max: number; color: string; label: string }[] = [
+  { max: 3,        color: "#94a3b8", label: "< 3%" },
+  { max: 6,        color: "#4ade80", label: "3–6%" },
+  { max: 9,        color: "#facc15", label: "6–9%" },
+  { max: 12,       color: "#fb923c", label: "9–12%" },
+  { max: 16,       color: "#ef4444", label: "12–16%" },
+  { max: Infinity, color: "#9f1239", label: "> 16%" },
+];
+
+function gradientColor(pct: number): string {
+  if (pct < 0) return "#94a3b8";
+  for (const zone of GRADIENT_ZONES) {
+    if (pct <= zone.max) return zone.color;
+  }
+  return GRADIENT_ZONES[GRADIENT_ZONES.length - 1].color;
+}
+
+function smoothEleArr(points: TrackPoint[], half: number): number[] {
+  return points.map((_, i) => {
+    const from = Math.max(0, i - half);
+    const to = Math.min(points.length - 1, i + half);
+    let sum = 0;
+    for (let j = from; j <= to; j++) sum += points[j].ele;
+    return sum / (to - from + 1);
+  });
+}
+
+function detectClimbs(trackPoints: TrackPoint[]): ClimbSegment[] {
+  if (trackPoints.length < 10) return [];
+
+  const MIN_GAIN = 60;
+  const MIN_LENGTH = 0.8;
+  const MAX_BREAK = 25;
+  const ele = smoothEleArr(trackPoints, 6);
+  const climbs: ClimbSegment[] = [];
+  let valleyIdx = 0;
+  let peakIdx = 0;
+  let peakEle = ele[0];
+
+  const emit = (vIdx: number, pIdx: number) => {
+    const pts = trackPoints.slice(vIdx, pIdx + 1);
+    if (pts.length < 2) return;
+    const gain = ele[pIdx] - ele[vIdx];
+    const length = pts[pts.length - 1].distance - pts[0].distance;
+    if (gain < MIN_GAIN || length < MIN_LENGTH) return;
+    const smoothed = smoothEleArr(pts, 4);
+    let maxGrad = 0;
+    for (let k = 1; k < pts.length; k++) {
+      const d = (pts[k].distance - pts[k - 1].distance) * 1000;
+      const g = smoothed[k] - smoothed[k - 1];
+      if (d > 2) maxGrad = Math.max(maxGrad, (g / d) * 100);
+    }
+    climbs.push({
+      startDistance: pts[0].distance,
+      endDistance: pts[pts.length - 1].distance,
+      startEle: pts[0].ele,
+      endEle: pts[pts.length - 1].ele,
+      gain: Math.round(gain),
+      length,
+      avgGradient: (gain / (length * 1000)) * 100,
+      maxGradient: maxGrad,
+      points: pts,
+    });
+  };
+
+  for (let i = 1; i < ele.length; i++) {
+    if (ele[i] > peakEle) {
+      peakEle = ele[i];
+      peakIdx = i;
+    }
+    const drop = peakEle - ele[i];
+    if (i === ele.length - 1) {
+      emit(valleyIdx, peakIdx);
+      break;
+    }
+    if (drop >= MAX_BREAK) {
+      emit(valleyIdx, peakIdx);
+      valleyIdx = i;
+      peakIdx = i;
+      peakEle = ele[i];
+    } else if (ele[i] < ele[valleyIdx] && peakIdx === valleyIdx) {
+      valleyIdx = i;
+      peakIdx = i;
+      peakEle = ele[i];
+    }
+  }
+
+  return climbs;
+}
+
+// --- Climb mini-profile SVG ---
+
+const MINI_W = 100;
+const MINI_H = 60;
+const MINI_PAD_LEFT = 10;
+const MINI_PAD_RIGHT = 2;
+const MINI_PAD_TOP = 4;
+const MINI_PAD_BTM = 11;
+const MINI_CHART_W = MINI_W - MINI_PAD_LEFT - MINI_PAD_RIGHT;
+const MINI_CHART_BOTTOM = MINI_H - MINI_PAD_BTM;
+const MINI_CHART_H = MINI_CHART_BOTTOM - MINI_PAD_TOP;
+
+function ClimbMiniProfile({ points }: { points: TrackPoint[] }) {
+  const data = useMemo(() => {
+    if (points.length < 2) return null;
+
+    const startDist = points[0].distance;
+    const endDist = points[points.length - 1].distance;
+    const totalLength = endDist - startDist;
+    const eles = points.map((p) => p.ele);
+    const minEle = Math.min(...eles);
+    const maxEle = Math.max(...eles);
+    const distSpan = Math.max(totalLength, 0.001);
+    const eleSpan = Math.max(maxEle - minEle, 1);
+
+    const toX = (d: number) => MINI_PAD_LEFT + ((d - startDist) / distSpan) * MINI_CHART_W;
+    const toY = (e: number) => MINI_PAD_TOP + (1 - (e - minEle) / eleSpan) * MINI_CHART_H;
+
+    // Interpolate elevation at any distance using the raw track points
+    const eleAt = (dist: number): number => {
+      if (dist <= points[0].distance) return points[0].ele;
+      if (dist >= points[points.length - 1].distance) return points[points.length - 1].ele;
+      for (let i = 1; i < points.length; i++) {
+        if (points[i].distance >= dist) {
+          const span = points[i].distance - points[i - 1].distance;
+          if (span < 0.000001) return points[i].ele;
+          const t = (dist - points[i - 1].distance) / span;
+          return points[i - 1].ele + t * (points[i].ele - points[i - 1].ele);
+        }
+      }
+      return points[points.length - 1].ele;
+    };
+
+    // ~200 m windows (Garmin-like): ~25 windows per climb, clamped [0.08, 0.25] km
+    const windowKm = Math.max(0.08, Math.min(0.25, totalLength / 25));
+    const numWindows = Math.round(totalLength / windowKm);
+    const actualWindow = totalLength / Math.max(numWindows, 1);
+
+    // Gradient per window
+    const raw: { start: number; end: number; grad: number; color: string }[] = [];
+    for (let w = 0; w < numWindows; w++) {
+      const wStart = startDist + w * actualWindow;
+      const wEnd = startDist + (w + 1) * actualWindow;
+      const grad = ((eleAt(wEnd) - eleAt(wStart)) / (actualWindow * 1000)) * 100;
+      raw.push({ start: wStart, end: wEnd, grad, color: gradientColor(grad) });
+    }
+
+    // Merge only when: same color zone AND gradient difference < 1% AND zone < 0.8 km
+    const MERGE_THRESHOLD = 1.0;
+    const MAX_ZONE_KM = 0.8;
+    const merged: { start: number; end: number; grad: number; color: string }[] = [];
+    for (const z of raw) {
+      if (merged.length > 0) {
+        const prev = merged[merged.length - 1];
+        const zoneLen = prev.end - prev.start;
+        if (
+          prev.color === z.color &&
+          Math.abs(prev.grad - z.grad) <= MERGE_THRESHOLD &&
+          zoneLen < MAX_ZONE_KM
+        ) {
+          prev.end = z.end;
+          prev.grad = ((eleAt(prev.end) - eleAt(prev.start)) / ((prev.end - prev.start) * 1000)) * 100;
+          prev.color = gradientColor(prev.grad);
+          continue;
+        }
+      }
+      merged.push({ ...z });
+    }
+
+    // Build SVG data for each merged color zone
+    type ZoneData = { fillPath: string; color: string; grad: number; labelX: number; labelY: number; wide: boolean };
+    const zones: ZoneData[] = merged.map((zone) => {
+      const zonePts = points.filter(
+        (p) => p.distance > zone.start && p.distance < zone.end,
+      );
+      const allPts = [
+        { distance: zone.start, ele: eleAt(zone.start) },
+        ...zonePts,
+        { distance: zone.end, ele: eleAt(zone.end) },
+      ];
+      const topPath = allPts
+        .map((p, i) => `${i === 0 ? "M" : "L"} ${toX(p.distance).toFixed(2)} ${toY(p.ele).toFixed(2)}`)
+        .join(" ");
+      const sx = toX(zone.start).toFixed(2);
+      const ex = toX(zone.end).toFixed(2);
+      const fillPath = `${topPath} L ${ex} ${MINI_CHART_BOTTOM} L ${sx} ${MINI_CHART_BOTTOM} Z`;
+
+      const midDist = (zone.start + zone.end) / 2;
+      const labelX = toX(midDist);
+      const labelY = MINI_CHART_BOTTOM - 3;
+      const zoneWidth = toX(zone.end) - toX(zone.start);
+
+      return { fillPath, color: zone.color, grad: zone.grad, labelX, labelY, wide: zoneWidth > 12 };
+    });
+
+    // Thin white divider at merged zone boundaries, max 20 dividers total
+    const MAX_DIVIDERS = 20;
+    const minDividerGap = MINI_CHART_W / MAX_DIVIDERS;
+    const dividers: { x: number; y: number }[] = [];
+    let lastDivX = MINI_PAD_LEFT - minDividerGap;
+    for (const z of merged.slice(1)) {
+      const x = toX(z.start);
+      if (x - lastDivX >= minDividerGap) {
+        dividers.push({ x, y: toY(eleAt(z.start)) });
+        lastDivX = x;
+      }
+    }
+
+    // Y axis: max, mid, min elevation labels
+    const midEle = (minEle + maxEle) / 2;
+    const yAxisTicks = [
+      { y: toY(maxEle), label: `${Math.round(maxEle)}` },
+      { y: toY(midEle), label: `${Math.round(midEle)}` },
+      { y: toY(minEle), label: `${Math.round(minEle)}` },
+    ];
+
+    // X axis: 0, mid, end of climb (relative distance within climb)
+    const xAxisTicks = [
+      { x: toX(startDist), label: "0", anchor: "start" as const },
+      { x: toX((startDist + endDist) / 2), label: (totalLength / 2).toFixed(1), anchor: "middle" as const },
+      { x: toX(endDist), label: `${totalLength.toFixed(1)} km`, anchor: "end" as const },
+    ];
+
+    return { zones, dividers, yAxisTicks, xAxisTicks };
+  }, [points]);
+
+  if (!data) return null;
+
+  return (
+    <svg viewBox={`0 0 ${MINI_W} ${MINI_H}`} className="climb-card__profile-svg" aria-hidden="true">
+      {/* Chart background */}
+      <rect
+        x={MINI_PAD_LEFT}
+        y={MINI_PAD_TOP}
+        width={MINI_CHART_W}
+        height={MINI_CHART_H}
+        fill="rgba(240,248,255,0.5)"
+      />
+      {/* Filled gradient zones */}
+      {data.zones.map((zone, i) => (
+        <path key={i} d={zone.fillPath} fill={zone.color} opacity="0.9" />
+      ))}
+      {/* Thin white dividers at merged zone boundaries, inside the filled area only */}
+      {data.dividers.map((d, i) => (
+        <line
+          key={`div-${i}`}
+          x1={d.x.toFixed(2)}
+          y1={d.y.toFixed(2)}
+          x2={d.x.toFixed(2)}
+          y2={MINI_CHART_BOTTOM}
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth="0.2"
+        />
+      ))}
+      {/* Gradient % labels inside wide zones */}
+      {data.zones.map((zone, i) =>
+        zone.wide && zone.grad > 0.5 ? (
+          <text
+            key={`lbl-${i}`}
+            x={zone.labelX.toFixed(2)}
+            y={zone.labelY.toFixed(2)}
+            textAnchor="middle"
+            className="climb-zone__label"
+          >
+            {zone.grad.toFixed(1)}%
+          </text>
+        ) : null,
+      )}
+      {/* Chart border */}
+      <line
+        x1={MINI_PAD_LEFT}
+        y1={MINI_CHART_BOTTOM}
+        x2={MINI_W - MINI_PAD_RIGHT}
+        y2={MINI_CHART_BOTTOM}
+        stroke="rgba(21,32,43,0.28)"
+        strokeWidth="0.5"
+      />
+      <line
+        x1={MINI_PAD_LEFT}
+        y1={MINI_PAD_TOP}
+        x2={MINI_PAD_LEFT}
+        y2={MINI_CHART_BOTTOM}
+        stroke="rgba(21,32,43,0.28)"
+        strokeWidth="0.5"
+      />
+      {/* Y axis elevation labels */}
+      {data.yAxisTicks.map((tick, i) => (
+        <text
+          key={`y-${i}`}
+          x={(MINI_PAD_LEFT - 1).toFixed(1)}
+          y={tick.y.toFixed(2)}
+          textAnchor="end"
+          dominantBaseline="middle"
+          className="climb-axis__label"
+        >
+          {tick.label}
+        </text>
+      ))}
+      {/* X axis distance labels */}
+      {data.xAxisTicks.map((tick, i) => (
+        <text
+          key={`x-${i}`}
+          x={tick.x.toFixed(2)}
+          y={(MINI_H - 1.5).toFixed(1)}
+          textAnchor={tick.anchor}
+          className="climb-axis__label"
+        >
+          {tick.label}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+function ClimbCard({
+  climb,
+  index,
+  total,
+  isSelected,
+  onClick,
+}: {
+  climb: ClimbSegment;
+  index: number;
+  total: number;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      className={`climb-card${isSelected ? " climb-card--selected" : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClick();
+      }}
+    >
+      <div className="climb-card__header">
+        <span className="eyebrow">Ascens {index} de {total}</span>
+      </div>
+      <ClimbMiniProfile points={climb.points} />
+      <div className="climb-card__legend">
+        {GRADIENT_ZONES.map((zone) => (
+          <span key={zone.label}>
+            <i className="climb-legend__dot" style={{ background: zone.color }} />
+            {zone.label}
+          </span>
+        ))}
+      </div>
+      <div className="climb-card__stats">
+        <div className="climb-card__stat">
+          <span>Distància</span>
+          <strong>{climb.length.toFixed(1)} km</strong>
+        </div>
+        <div className="climb-card__stat">
+          <span>Desnivell</span>
+          <strong>+{climb.gain} m</strong>
+        </div>
+        <div className="climb-card__stat">
+          <span>Pendent mitja</span>
+          <strong>{climb.avgGradient.toFixed(1)}%</strong>
+        </div>
+      </div>
+      <div className="climb-card__km-range">
+        km {climb.startDistance.toFixed(1)} → {climb.endDistance.toFixed(1)}
+      </div>
+    </div>
+  );
+}
+
+function ClimbsSection({
+  climbs,
+  selectedIdx,
+  onSelect,
+}: {
+  climbs: ClimbSegment[];
+  selectedIdx: number | null;
+  onSelect: (idx: number | null) => void;
+}) {
+  if (climbs.length === 0) return null;
+  return (
+    <div className="climb-section">
+      <div className="climb-section__header">
+        <span className="eyebrow">Ascensos</span>
+        <p className="climb-section__subtitle">
+          {climbs.length} ascens{climbs.length !== 1 ? "os" : ""} detectat{climbs.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+      <div className="climb-grid">
+        {climbs.map((climb, i) => (
+          <ClimbCard
+            key={i}
+            climb={climb}
+            index={i + 1}
+            total={climbs.length}
+            isSelected={selectedIdx === i}
+            onClick={() => onSelect(selectedIdx === i ? null : i)}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function ZoomButtons({ points }: { points: Array<[number, number]> }) {
@@ -432,6 +850,8 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
         profileMinElevation: 0,
         profileMaxDistance: 0,
         profilePoints: [] as ProfileModel["points"],
+        profileTrackPoints: [] as TrackPoint[],
+        climbs: [] as ClimbSegment[],
       };
     }
 
@@ -446,6 +866,8 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
         profileMinElevation: 0,
         profileMaxDistance: 0,
         profilePoints: [] as ProfileModel["points"],
+        profileTrackPoints: [] as TrackPoint[],
+        climbs: [] as ClimbSegment[],
       };
     }
 
@@ -460,11 +882,14 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
       profileMinElevation: profile.minElevation,
       profileMaxDistance: profile.maxDistance,
       profilePoints: profile.points,
+      profileTrackPoints: profile.trackPoints,
+      climbs: detectClimbs(profile.trackPoints),
     };
   }, [gpxContent]);
 
   const [activeDistance, setActiveDistance] = useState<number | null>(null);
   const [tileStyleId, setTileStyleId] = useState<string>("carto-voyager");
+  const [selectedClimbIdx, setSelectedClimbIdx] = useState<number | null>(null);
   const selectedTileStyle = useMemo(
     () => TILE_STYLE_OPTIONS.find((option) => option.id === tileStyleId) ?? TILE_STYLE_OPTIONS[0],
     [tileStyleId],
@@ -490,6 +915,23 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
       ) ?? null
     );
   }, [activeDistance, model.profileHasData, model.profilePoints]);
+
+  const profileHighlight = useMemo(() => {
+    if (selectedClimbIdx === null) return null;
+    const climb = model.climbs[selectedClimbIdx];
+    if (!climb) return null;
+    const pts = model.profilePoints.filter(
+      (p) => p.distance >= climb.startDistance - 0.01 && p.distance <= climb.endDistance + 0.01,
+    );
+    if (pts.length < 2) return null;
+    const linePath = pts
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+      .join(" ");
+    const firstX = pts[0].x.toFixed(2);
+    const lastX = pts[pts.length - 1].x.toFixed(2);
+    const fillPath = `${linePath} L ${lastX} ${PROFILE_PADDING_BOTTOM} L ${firstX} ${PROFILE_PADDING_BOTTOM} Z`;
+    return { linePath, fillPath };
+  }, [selectedClimbIdx, model]);
 
   const updateActiveDistanceFromProfile = (point: ProfileModel["points"][number] | null) => {
     if (!point) {
@@ -700,6 +1142,18 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
                 strokeWidth="0.7"
               />
               <path d={model.profilePathD} fill="none" stroke="url(#profile-line-gradient)" strokeWidth="1.8" />
+              {profileHighlight ? (
+                <>
+                  <path d={profileHighlight.fillPath} fill="rgba(250,204,21,0.2)" stroke="none" />
+                  <path
+                    d={profileHighlight.linePath}
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                </>
+              ) : null}
               {activeProfilePoint ? (
                 <>
                   <line
@@ -746,6 +1200,13 @@ export function GpxViewer({ gpxContent, gpxFileName }: GpxViewerProps) {
           <p className="route-detail__empty">El GPX no inclou alçades suficients per a mostrar el perfil.</p>
         )}
       </div>
+      {model.profileHasData && model.climbs.length > 0 ? (
+        <ClimbsSection
+          climbs={model.climbs}
+          selectedIdx={selectedClimbIdx}
+          onSelect={setSelectedClimbIdx}
+        />
+      ) : null}
     </div>
   );
 }

@@ -83,32 +83,31 @@ export default async function RoutesCalendarSubscriptionPage() {
             </article>
 
             <article className="card">
-              <h3>iPhone / Apple Calendar</h3>
+              <h3>Telèfon iPhone</h3>
               <p>
-                En iPhone pots afegir un calendari subscrit directament des de
-                la configuració del dispositiu.
+                En iPhone pots subscriure’t a un calendari directament des de
+                l’app Calendari, sense passar per la configuració.
               </p>
 
               <ol>
                 <li>Copia l’enllaç ICS del calendari.</li>
                 <li>
-                  Ves a{" "}
-                  <strong>
-                    Configuració &gt; Apps &gt; Calendari &gt; Comptes
-                  </strong>
-                  .
+                  Obri l’app <strong>Calendari</strong>.
                 </li>
                 <li>
-                  Prem <strong>Afegir compte</strong> i després{" "}
-                  <strong>Altre</strong>.
+                  Prem <strong>Calendaris</strong> a la part inferior de la
+                  pantalla.
                 </li>
                 <li>
-                  Selecciona <strong>Afegir calendari subscrit</strong>.
+                  Prem <strong>Afegir calendari</strong>.
                 </li>
                 <li>
-                  Apega l’URL i prem <strong>Següent</strong>.
+                  Selecciona <strong>Afegir calendari de subscripció</strong>.
                 </li>
-                <li>Guarda els canvis.</li>
+                <li>Apega l’URL i prem <strong>Subscriu-te</strong>.</li>
+                <li>
+                  Ajusta el nom i el color si vols, i prem <strong>OK</strong>.
+                </li>
               </ol>
             </article>
           </div>

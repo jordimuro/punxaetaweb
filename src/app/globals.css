@@ -818,8 +818,16 @@ img {
   gap: 1rem;
 }
 
+.grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .grid--3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.panel + .grid {
+  margin-top: 1.5rem;
 }
 
 .card {
@@ -830,6 +838,21 @@ img {
 .card h3 {
   margin-bottom: 0.55rem;
   font-size: 1.1rem;
+}
+
+.card ol,
+.card ul {
+  padding-left: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.card li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.card li + li {
+  margin-top: 0.35rem;
 }
 
 .route-rail {
@@ -2019,6 +2042,172 @@ img {
   color: var(--muted);
 }
 
+.climb-section {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.climb-section__header {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.climb-section__subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.climb-gradient-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.climb-gradient-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.climb-legend__dot {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.climb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.climb-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.climb-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(95, 180, 231, 0.3);
+}
+
+.climb-card--selected {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3), var(--shadow);
+}
+
+.climb-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 20%),
+    radial-gradient(circle at top right, rgba(95, 180, 231, 0.1), transparent 30%);
+}
+
+.climb-card__header {
+  position: relative;
+  z-index: 1;
+}
+
+.climb-card__profile-svg {
+  width: 100%;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(95, 180, 231, 0.12);
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.climb-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.climb-card__stat {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.climb-card__stat span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.climb-card__stat strong {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.climb-card__km-range {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.climb-zone__label {
+  fill: rgba(0, 0, 0, 0.82);
+  font-size: 4.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.climb-axis__label {
+  fill: rgba(21, 32, 43, 0.55);
+  font-size: 3px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.climb-card__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  position: relative;
+  z-index: 1;
+}
+
+.climb-card__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .route-detail__meta {
   margin: 0.25rem 0 0;
   color: var(--navy-soft);
@@ -2204,6 +2393,7 @@ img {
 
 @media (max-width: 980px) {
   .hero__grid,
+  .grid--2,
   .grid--3,
   .route-row,
   .equipment-row,
@@ -2333,5 +2523,9 @@ img {
 
   .upload-shell__actions .button {
     width: 100%;
+  }
+
+  .climb-grid {
+    grid-template-columns: 1fr;
   }
 }
