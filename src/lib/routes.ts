@@ -143,6 +143,8 @@ const createTableStatement = db.prepare(`
   )
 `);
 
+createTableStatement.run();
+
 function ensureColumn(name: string, definition: string) {
   const columns = db.prepare("PRAGMA table_info(routes)").all() as Array<{ name: string }>;
   if (columns.some((column) => column.name === name)) {
