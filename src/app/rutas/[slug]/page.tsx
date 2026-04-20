@@ -86,49 +86,61 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
           <div className="route-detail__grid">
             <article className="panel">
               <span className="panel__label">Informació principal</span>
-              <dl className="stats stats--stacked">
-                <div>
-                  <dt>Data</dt>
-                  <dd>{buildDateLabel(route.date)}</dd>
-                </div>
-                <div>
-                  <dt>Hora eixida</dt>
-                  <dd>{route.departureTimes.join(" / ")}</dd>
-                </div>
-                <div>
-                  <dt>Lloc d&apos;eixida</dt>
-                  <dd>{route.meetingPoint}</dd>
-                </div>
-                <div>
-                  <dt>Km totals</dt>
-                  <dd>{route.kms} km</dd>
-                </div>
-                <div>
-                  <dt>Desnivell total</dt>
-                  <dd>{route.elevationGain} m</dd>
-                </div>
-                {route.routeType === "cicloturista" ? (
+              {route.routeType === "cicloturista" ? (
+                <dl className="stats stats--stacked">
+                  <div>
+                    <dt>Data</dt>
+                    <dd>{buildDateLabel(route.date)}</dd>
+                  </div>
+                  <div>
+                    <dt>Població</dt>
+                    <dd>{route.town}</dd>
+                  </div>
                   <div>
                     <dt>Tipus</dt>
                     <dd>Marcha Cicloturista</dd>
                   </div>
-                ) : (
-                  <>
-                    <div>
-                      <dt>Lloc d&apos;esmorzar</dt>
-                      <dd>{route.breakfastPlace}</dd>
-                    </div>
-                    <div>
-                      <dt>Km fins esmorzar</dt>
-                      <dd>{route.distanceToBreakfast} km</dd>
-                    </div>
-                    <div>
-                      <dt>Desnivell fins esmorzar</dt>
-                      <dd>{route.elevationToBreakfast} m</dd>
-                    </div>
-                  </>
-                )}
-              </dl>
+                </dl>
+              ) : (
+                <dl className="stats stats--stacked">
+                  <div>
+                    <dt>Data</dt>
+                    <dd>{buildDateLabel(route.date)}</dd>
+                  </div>
+                  <div>
+                    <dt>Població</dt>
+                    <dd>{route.town}</dd>
+                  </div>
+                  <div>
+                    <dt>Hora eixida</dt>
+                    <dd>{route.departureTimes.join(" / ")}</dd>
+                  </div>
+                  <div>
+                    <dt>Lloc d&apos;eixida</dt>
+                    <dd>{route.meetingPoint}</dd>
+                  </div>
+                  <div>
+                    <dt>Km totals</dt>
+                    <dd>{route.kms} km</dd>
+                  </div>
+                  <div>
+                    <dt>Desnivell total</dt>
+                    <dd>{route.elevationGain} m</dd>
+                  </div>
+                  <div>
+                    <dt>Lloc d&apos;esmorzar</dt>
+                    <dd>{route.breakfastPlace}</dd>
+                  </div>
+                  <div>
+                    <dt>Km fins esmorzar</dt>
+                    <dd>{route.distanceToBreakfast} km</dd>
+                  </div>
+                  <div>
+                    <dt>Desnivell fins esmorzar</dt>
+                    <dd>{route.elevationToBreakfast} m</dd>
+                  </div>
+                </dl>
+              )}
             </article>
 
             {route.routeType === "cicloturista" ? (
@@ -153,53 +165,6 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
                     <p className="route-detail__empty">No hi ha una web oficial vàlida configurada.</p>
                   )}
                 </div>
-                <div className="route-variant-stack">
-                  <div className="route-variant-card">
-                    <p className="route-variant-card__title">{primaryRouteName}</p>
-                    <dl className="stats stats--stacked">
-                      <div>
-                        <dt>Punt eixida</dt>
-                        <dd>{route.meetingPoint}</dd>
-                      </div>
-                      <div>
-                        <dt>Hora eixida</dt>
-                        <dd>{route.departureTimes[0] ?? "-"}</dd>
-                      </div>
-                      <div>
-                        <dt>Kms</dt>
-                        <dd>{route.kms} km</dd>
-                      </div>
-                      <div>
-                        <dt>Desnivell</dt>
-                        <dd>{route.elevationGain} m</dd>
-                      </div>
-                    </dl>
-                  </div>
-
-                  {hasSecondaryRouteInfo ? (
-                    <div className="route-variant-card">
-                      <p className="route-variant-card__title">{secondaryRouteName}</p>
-                      <dl className="stats stats--stacked">
-                        <div>
-                          <dt>Punt eixida</dt>
-                          <dd>{route.meetingPointSecondary ?? "-"}</dd>
-                        </div>
-                        <div>
-                          <dt>Hora eixida</dt>
-                          <dd>{route.departureTimeSecondary ?? "-"}</dd>
-                        </div>
-                        <div>
-                          <dt>Kms</dt>
-                          <dd>{route.kmsSecondary !== null ? `${route.kmsSecondary} km` : "-"}</dd>
-                        </div>
-                        <div>
-                          <dt>Desnivell</dt>
-                          <dd>{route.elevationGainSecondary !== null ? `${route.elevationGainSecondary} m` : "-"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-                  ) : null}
-                </div>
               </aside>
             ) : (
               <aside className="panel panel--accent">
@@ -211,9 +176,63 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
             )}
           </div>
 
+          {route.routeType === "cicloturista" ? (
+            <section className="panel route-detail__variants">
+              <span className="panel__label">Recorreguts</span>
+              <h2>Recorreguts</h2>
+              <div className="route-variant-stack">
+                <div className="route-variant-card">
+                  <p className="route-variant-card__title">{primaryRouteName}</p>
+                  <dl className="stats stats--stacked">
+                    <div>
+                      <dt>Punt eixida</dt>
+                      <dd>{route.meetingPoint}</dd>
+                    </div>
+                    <div>
+                      <dt>Hora eixida</dt>
+                      <dd>{route.departureTimes[0] ?? "-"}</dd>
+                    </div>
+                    <div>
+                      <dt>Kms</dt>
+                      <dd>{route.kms} km</dd>
+                    </div>
+                    <div>
+                      <dt>Desnivell</dt>
+                      <dd>{route.elevationGain} m</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {hasSecondaryRouteInfo ? (
+                  <div className="route-variant-card">
+                    <p className="route-variant-card__title">{secondaryRouteName}</p>
+                    <dl className="stats stats--stacked">
+                      <div>
+                        <dt>Punt eixida</dt>
+                        <dd>{route.meetingPointSecondary ?? "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>Hora eixida</dt>
+                        <dd>{route.departureTimeSecondary ?? "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>Kms</dt>
+                        <dd>{route.kmsSecondary !== null ? `${route.kmsSecondary} km` : "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>Desnivell</dt>
+                        <dd>{route.elevationGainSecondary !== null ? `${route.elevationGainSecondary} m` : "-"}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
           <section className="panel route-detail__gpx">
-            <span className="panel__label">{route.routeType === "cicloturista" ? "Recorreguts" : "Mapa i perfil"}</span>
-            <h2>{route.routeType === "cicloturista" ? "Recorreguts i perfils" : "Mapa i perfil"}</h2>
+            <span className="panel__label">{route.routeType === "cicloturista" ? "Mapes" : "Mapa i perfil"}</span>
+            <h2>{route.routeType === "cicloturista" ? "Mapes i ascensions" : "Mapa i perfil"}</h2>
             {hasAnyGpx ? (
               <div className="route-detail__gpx-list">
                 {hasPrimaryGpx ? (

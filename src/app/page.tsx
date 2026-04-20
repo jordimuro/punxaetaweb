@@ -142,6 +142,10 @@ export default async function HomePage() {
                         <dd>{buildDateLabel(route.date)}</dd>
                       </div>
                       <div>
+                        <dt>Població</dt>
+                        <dd>{route.town}</dd>
+                      </div>
+                      <div>
                         <dt>Hora eixida</dt>
                         <dd>{route.departureTimes.join(" / ")}</dd>
                       </div>
