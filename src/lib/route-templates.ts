@@ -150,8 +150,6 @@ const createTableStatement = db.prepare(`
   )
 `);
 
-createTableStatement.run();
-
 function ensureColumn(name: string, definition: string) {
   const columns = db.prepare("PRAGMA table_info(route_templates)").all() as Array<{ name: string }>;
   if (columns.some((column) => column.name === name)) {
@@ -179,8 +177,6 @@ function ensureSchema() {
   ensureColumn("gpxPathSecondary", "gpxPathSecondary TEXT");
   ensureColumn("gpxContentSecondary", "gpxContentSecondary TEXT");
 }
-
-ensureSchema();
 
 const listStatement = db.prepare(
   "SELECT id, routeType, slug, name, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM route_templates ORDER BY name ASC",

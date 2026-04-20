@@ -75,8 +75,6 @@ const createTableStatement = db.prepare(`
   )
 `);
 
-createTableStatement.run();
-
 function ensureColumn(name: string, definition: string) {
   const columns = db.prepare("PRAGMA table_info(equipment)").all() as Array<{ name: string }>;
   if (columns.some((column) => column.name === name)) {
@@ -91,8 +89,6 @@ function ensureSchema() {
   ensureColumn("imagePathsJson", "imagePathsJson TEXT NOT NULL DEFAULT '[]'");
   ensureColumn("videoPathsJson", "videoPathsJson TEXT NOT NULL DEFAULT '[]'");
 }
-
-ensureSchema();
 
 const countEquipmentStatement = db.prepare("SELECT COUNT(*) as count FROM equipment");
 const listEquipmentStatement = db.prepare(

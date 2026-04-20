@@ -43,8 +43,13 @@ const createImagesTableStatement = db.prepare(`
   )
 `);
 
-createPostsTableStatement.run();
-createImagesTableStatement.run();
+try {
+  createPostsTableStatement.run();
+  createImagesTableStatement.run();
+} catch {
+  // During parallel build workers (Railway), another worker may hold
+  // the SQLite write lock while creating schema. Runtime calls will recover.
+}
 
 const countPostsStatement = db.prepare("SELECT COUNT(*) as count FROM photo_posts");
 const listPostsStatement = db.prepare(

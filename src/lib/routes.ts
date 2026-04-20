@@ -143,8 +143,6 @@ const createTableStatement = db.prepare(`
   )
 `);
 
-createTableStatement.run();
-
 function ensureColumn(name: string, definition: string) {
   const columns = db.prepare("PRAGMA table_info(routes)").all() as Array<{ name: string }>;
   if (columns.some((column) => column.name === name)) {
@@ -153,8 +151,6 @@ function ensureColumn(name: string, definition: string) {
 
   db.exec(`ALTER TABLE routes ADD COLUMN ${definition}`);
 }
-
-ensureSchema();
 
 const listRoutesStatement = db.prepare(
   "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes ORDER BY date ASC, name ASC",
