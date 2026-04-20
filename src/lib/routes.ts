@@ -18,6 +18,8 @@ import {
 
 export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationToBreakfast"> & {
   id: string;
+  routeType: "ruta" | "cicloturista";
+  externalUrl: string | null;
   distanceToBreakfast: number;
   elevationToBreakfast: number;
   gpxFileName: string | null;
@@ -28,6 +30,7 @@ export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationT
 export type RouteFormValues = {
   id: string;
   originalSlug: string;
+  routeType: "ruta" | "cicloturista";
   slug: string;
   name: string;
   date: string;
@@ -42,6 +45,7 @@ export type RouteFormValues = {
   summary: string;
   meetingPoint: string;
   notes: string;
+  externalUrl: string;
   gpxFileName: string;
   gpxPath: string;
   gpxContent: string;
@@ -55,6 +59,7 @@ export type RouteFormState = {
 
 type RouteRow = {
   id: string;
+  routeType: "ruta" | "cicloturista";
   slug: string;
   name: string;
   date: string;
@@ -69,6 +74,7 @@ type RouteRow = {
   summary: string;
   meetingPoint: string;
   notes: string;
+  externalUrl: string | null;
   gpxFileName: string | null;
   gpxPath: string | null;
   gpxContent: string | null;
@@ -77,6 +83,7 @@ type RouteRow = {
 const createTableStatement = db.prepare(`
   CREATE TABLE IF NOT EXISTS routes (
     id TEXT PRIMARY KEY,
+    routeType TEXT NOT NULL DEFAULT 'ruta',
     slug TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     date TEXT NOT NULL,
@@ -91,6 +98,7 @@ const createTableStatement = db.prepare(`
     summary TEXT NOT NULL,
     meetingPoint TEXT NOT NULL,
     notes TEXT NOT NULL,
+    externalUrl TEXT,
     gpxFileName TEXT,
     gpxPath TEXT,
     gpxContent TEXT,
@@ -113,36 +121,37 @@ function ensureColumn(name: string, definition: string) {
 ensureSchema();
 
 const listRoutesStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent FROM routes ORDER BY date ASC, name ASC",
+  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent FROM routes ORDER BY date ASC, name ASC",
 );
 const countRoutesStatement = db.prepare("SELECT COUNT(*) as count FROM routes");
 const findRouteStatement = db.prepare(
-  "SELECT id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent FROM routes WHERE slug = ? LIMIT 1",
+  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent FROM routes WHERE slug = ? LIMIT 1",
 );
 const insertRouteStatement = db.prepare(`
   INSERT INTO routes (
-    id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
+    id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent
+    summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent
   ) VALUES (
-    @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
+    @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @gpxFileName, @gpxPath, @gpxContent
+    @summary, @meetingPoint, @notes, @externalUrl, @gpxFileName, @gpxPath, @gpxContent
   )
 `);
 const seedInsertRouteStatement = db.prepare(`
   INSERT OR IGNORE INTO routes (
-    id, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
+    id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, gpxFileName, gpxPath, gpxContent
+    summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent
   ) VALUES (
-    @id, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
+    @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @gpxFileName, @gpxPath, @gpxContent
+    @summary, @meetingPoint, @notes, @externalUrl, @gpxFileName, @gpxPath, @gpxContent
   )
 `);
 const updateRouteStatement = db.prepare(`
   UPDATE routes SET
+    routeType = @routeType,
     slug = @slug,
     name = @name,
     date = @date,
@@ -157,6 +166,7 @@ const updateRouteStatement = db.prepare(`
     summary = @summary,
     meetingPoint = @meetingPoint,
     notes = @notes,
+    externalUrl = @externalUrl,
     gpxFileName = @gpxFileName,
     gpxPath = @gpxPath,
     gpxContent = @gpxContent,
@@ -172,8 +182,10 @@ const seedRoutesTransaction = db.transaction((rows: RouteRow[]) => {
 
 function ensureSchema() {
   createTableStatement.run();
+  ensureColumn("routeType", "routeType TEXT NOT NULL DEFAULT 'ruta'");
   ensureColumn("distanceToBreakfast", "distanceToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("elevationToBreakfast", "elevationToBreakfast INTEGER NOT NULL DEFAULT 0");
+  ensureColumn("externalUrl", "externalUrl TEXT");
   ensureColumn("gpxFileName", "gpxFileName TEXT");
   ensureColumn("gpxPath", "gpxPath TEXT");
   ensureColumn("gpxContent", "gpxContent TEXT");
@@ -222,6 +234,7 @@ function seedRoutesIfNeeded() {
   seedRoutesTransaction(
     seedRoutes.map((route) => ({
       id: randomUUID(),
+      routeType: route.routeType ?? "ruta",
       slug: route.slug,
       name: route.name,
       date: route.date,
@@ -236,6 +249,7 @@ function seedRoutesIfNeeded() {
       summary: route.summary,
       meetingPoint: route.meetingPoint,
       notes: route.notes,
+      externalUrl: route.externalUrl ?? null,
       gpxFileName: route.gpxFileName ?? null,
       gpxPath: route.gpxPath ?? null,
       gpxContent: route.gpxContent ?? null,
@@ -250,6 +264,7 @@ function toRouteRecord(route: RouteRow): RouteRecord {
 
   return {
     id: route.id,
+    routeType: route.routeType ?? "ruta",
     slug: route.slug,
     name: route.name,
     date: route.date,
@@ -263,6 +278,7 @@ function toRouteRecord(route: RouteRow): RouteRecord {
     summary: route.summary,
     meetingPoint: route.meetingPoint,
     notes: route.notes,
+    externalUrl: route.externalUrl,
     gpxFileName: route.gpxFileName,
     gpxPath: route.gpxPath,
     gpxContent: route.gpxContent,
@@ -284,6 +300,7 @@ function normalizeDepartureTimes(departureTimes: string[]) {
 export const emptyRouteValues = (): RouteFormValues => ({
   id: "",
   originalSlug: "",
+  routeType: "ruta",
   slug: "",
   name: "",
   date: "",
@@ -298,6 +315,7 @@ export const emptyRouteValues = (): RouteFormValues => ({
   summary: "",
   meetingPoint: "",
   notes: "",
+  externalUrl: "",
   gpxFileName: "",
   gpxPath: "",
   gpxContent: "",
@@ -338,19 +356,43 @@ export async function getUpcomingRoutes(todayKey: string, limit = 3) {
 
 function buildRouteErrors(values: RouteFormValues) {
   const errors: Partial<Record<keyof RouteFormValues, string>> = {};
+  const isCicloturista = values.routeType === "cicloturista";
 
+  if (values.routeType !== "ruta" && values.routeType !== "cicloturista") {
+    errors.routeType = "Tipus de ruta no vàlid.";
+  }
   if (!values.slug.trim()) errors.slug = "Cal un slug.";
   if (!values.name.trim()) errors.name = "Cal un nom.";
   if (!values.date.trim()) errors.date = "Cal una data.";
-  if (!values.breakfastPlace.trim()) errors.breakfastPlace = "Cal un lloc d'esmorzar.";
   if (!values.departureTimeOne.trim()) errors.departureTimeOne = "Cal com a mínim una hora d'eixida.";
-  if (!values.distanceToBreakfast.trim()) errors.distanceToBreakfast = "Cal indicar la distància fins a esmorzar.";
-  if (!values.elevationToBreakfast.trim()) errors.elevationToBreakfast = "Cal indicar el desnivell fins a esmorzar.";
   if (!values.kms.trim()) errors.kms = "Cal indicar els quilòmetres.";
   if (!values.elevationGain.trim()) errors.elevationGain = "Cal indicar el desnivell.";
   if (!values.town.trim()) errors.town = "Cal indicar la població.";
   if (!values.meetingPoint.trim()) errors.meetingPoint = "Cal un punt de trobada.";
   if (!values.notes.trim()) errors.notes = "Cal un recorregut.";
+  if (!isCicloturista && !values.breakfastPlace.trim()) {
+    errors.breakfastPlace = "Cal un lloc d'esmorzar.";
+  }
+  if (!isCicloturista && !values.distanceToBreakfast.trim()) {
+    errors.distanceToBreakfast = "Cal indicar la distància fins a esmorzar.";
+  }
+  if (!isCicloturista && !values.elevationToBreakfast.trim()) {
+    errors.elevationToBreakfast = "Cal indicar el desnivell fins a esmorzar.";
+  }
+  if (isCicloturista) {
+    if (!values.externalUrl.trim()) {
+      errors.externalUrl = "Cal indicar la web de la marxa.";
+    } else {
+      try {
+        const parsedUrl = new URL(values.externalUrl);
+        if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+          errors.externalUrl = "La web ha de començar per http:// o https://.";
+        }
+      } catch {
+        errors.externalUrl = "La web de la marxa no és vàlida.";
+      }
+    }
+  }
 
   return errors;
 }
@@ -368,6 +410,7 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
   return {
     id: route.id,
     originalSlug: route.slug,
+    routeType: route.routeType,
     slug: route.slug,
     name: route.name,
     date: route.date,
@@ -382,6 +425,7 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     summary: route.summary,
     meetingPoint: route.meetingPoint,
     notes: route.notes,
+    externalUrl: route.externalUrl ?? "",
     gpxFileName: route.gpxFileName ?? "",
     gpxPath: route.gpxPath ?? "",
     gpxContent: route.gpxContent ?? "",
@@ -433,6 +477,7 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
   const values: RouteFormValues = {
     id: String(formData.get("id") ?? ""),
     originalSlug: String(formData.get("originalSlug") ?? ""),
+    routeType: String(formData.get("routeType") ?? "ruta").trim() === "cicloturista" ? "cicloturista" : "ruta",
     slug: String(formData.get("slug") ?? "").trim(),
     name: String(formData.get("name") ?? "").trim(),
     date: String(formData.get("date") ?? ""),
@@ -447,6 +492,7 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     summary: buildRouteSummary(notes),
     meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
     notes,
+    externalUrl: String(formData.get("externalUrl") ?? "").trim(),
     gpxFileName: String(formData.get("gpxFileName") ?? "").trim(),
     gpxPath: String(formData.get("gpxPath") ?? "").trim(),
     gpxContent,
@@ -462,21 +508,24 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
 
 export async function createRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
+  const isCicloturista = values.routeType === "cicloturista";
   const row: RouteRow = {
     id: randomUUID(),
+    routeType: values.routeType,
     slug: values.slug,
     name: values.name,
     date: toDbDate(values.date),
-    breakfastPlace: values.breakfastPlace,
-    ...normalizeDepartureTimes([values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
-    distanceToBreakfast: Number(values.distanceToBreakfast),
-    elevationToBreakfast: Number(values.elevationToBreakfast),
+    breakfastPlace: isCicloturista ? "Marxa cicloturista" : values.breakfastPlace,
+    ...normalizeDepartureTimes(isCicloturista ? [values.departureTimeOne] : [values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
+    distanceToBreakfast: isCicloturista ? 0 : Number(values.distanceToBreakfast),
+    elevationToBreakfast: isCicloturista ? 0 : Number(values.elevationToBreakfast),
     kms: Number(values.kms),
     elevationGain: Number(values.elevationGain),
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
     notes: values.notes,
+    externalUrl: isCicloturista ? values.externalUrl : null,
     gpxFileName: values.gpxFileName || null,
     gpxPath: values.gpxPath || null,
     gpxContent: values.gpxContent || null,
@@ -488,6 +537,7 @@ export async function createRoute(values: RouteFormValues) {
 
 export async function updateRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
+  const isCicloturista = values.routeType === "cicloturista";
   const existing = values.id
       ? (db.prepare(
         "SELECT gpxFileName, gpxPath, gpxContent FROM routes WHERE id = ? LIMIT 1",
@@ -495,19 +545,21 @@ export async function updateRoute(values: RouteFormValues) {
     : undefined;
   const row: RouteRow = {
     id: values.id,
+    routeType: values.routeType,
     slug: values.slug,
     name: values.name,
     date: toDbDate(values.date),
-    breakfastPlace: values.breakfastPlace,
-    ...normalizeDepartureTimes([values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
-    distanceToBreakfast: Number(values.distanceToBreakfast),
-    elevationToBreakfast: Number(values.elevationToBreakfast),
+    breakfastPlace: isCicloturista ? "Marxa cicloturista" : values.breakfastPlace,
+    ...normalizeDepartureTimes(isCicloturista ? [values.departureTimeOne] : [values.departureTimeOne, values.departureTimeTwo].filter(Boolean)),
+    distanceToBreakfast: isCicloturista ? 0 : Number(values.distanceToBreakfast),
+    elevationToBreakfast: isCicloturista ? 0 : Number(values.elevationToBreakfast),
     kms: Number(values.kms),
     elevationGain: Number(values.elevationGain),
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
     notes: values.notes,
+    externalUrl: isCicloturista ? values.externalUrl : null,
     gpxFileName: existing?.gpxFileName ?? null,
     gpxPath: existing?.gpxPath ?? null,
     gpxContent: existing?.gpxContent ?? null,

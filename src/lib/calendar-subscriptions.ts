@@ -5,6 +5,8 @@ import { db } from "@/lib/database";
 import type { Statement } from "better-sqlite3";
 
 type IcsStatsRow = {
+  devicesTotal: number;
+  devicesLast30d: number;
   subscribersTotal: number;
   subscribersLast30d: number;
   requestsTotal: number;
@@ -13,6 +15,8 @@ type IcsStatsRow = {
 };
 
 const emptyStats = {
+  devicesTotal: 0,
+  devicesLast30d: 0,
   subscribersTotal: 0,
   subscribersLast30d: 0,
   requestsTotal: 0,
@@ -76,8 +80,25 @@ function ensureSchema() {
       `),
       getStatsStatement: db.prepare(`
         SELECT
-          COUNT(*) AS subscribersTotal,
-          COUNT(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN 1 END) AS subscribersLast30d,
+          COUNT(*) AS devicesTotal,
+          COUNT(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN 1 END) AS devicesLast30d,
+          COUNT(
+            CASE
+              WHEN request_count >= 3
+                OR (request_count >= 2 AND (julianday(last_seen_at) - julianday(first_seen_at)) >= 1)
+              THEN 1
+            END
+          ) AS subscribersTotal,
+          COUNT(
+            CASE
+              WHEN last_seen_at >= datetime('now', '-30 days')
+                AND (
+                  request_count >= 3
+                  OR (request_count >= 2 AND (julianday(last_seen_at) - julianday(first_seen_at)) >= 1)
+                )
+              THEN 1
+            END
+          ) AS subscribersLast30d,
           COALESCE(SUM(request_count), 0) AS requestsTotal,
           COALESCE(SUM(CASE WHEN last_seen_at >= datetime('now', '-30 days') THEN request_count ELSE 0 END), 0) AS requestsLast30d,
           MAX(last_seen_at) AS lastSeenAt
@@ -162,6 +183,8 @@ export function getIcsSubscriptionStats() {
     const row = statements.getStatsStatement.get() as IcsStatsRow;
 
     return {
+      devicesTotal: row.devicesTotal,
+      devicesLast30d: row.devicesLast30d,
       subscribersTotal: row.subscribersTotal,
       subscribersLast30d: row.subscribersLast30d,
       requestsTotal: row.requestsTotal,

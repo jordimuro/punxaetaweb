@@ -206,9 +206,11 @@ export function LoginStatusCard() {
 
 export function HeaderAuthControl({
   className,
+  guestClassName,
   onNavigate,
 }: {
   className?: string;
+  guestClassName?: string;
   onNavigate?: () => void;
 }) {
   const router = useRouter();
@@ -220,7 +222,7 @@ export function HeaderAuthControl({
 
   if (!isAuthenticated) {
     return (
-      <Link className={className} href="/login" onClick={onNavigate}>
+      <Link className={guestClassName ?? className} href="/login" onClick={onNavigate}>
         Accés
       </Link>
     );
@@ -231,25 +233,58 @@ export function HeaderAuthControl({
       <span className="auth-control__status">
         Sessió activa · {username ?? FIXED_USERNAME}
       </span>
-      <Link
-        className="auth-control__link"
-        href="/settings"
-        onClick={onNavigate}
-      >
-        Settings
-      </Link>
-      <button
-        type="button"
-        className="auth-control__button"
-        onClick={() => {
-          logout();
-          onNavigate?.();
-          router.replace("/");
-          router.refresh();
-        }}
-      >
-        Tancar sessió
-      </button>
+      <div className="auth-control__actions">
+        <Link
+          className="auth-control__link"
+          href="/estadistiques"
+          onClick={onNavigate}
+          aria-label="Obrir estadístiques"
+          title="Estadístiques"
+        >
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <rect x="4" y="12" width="3.2" height="8" rx="1.1" fill="currentColor" />
+            <rect x="10.4" y="8" width="3.2" height="12" rx="1.1" fill="currentColor" />
+            <rect x="16.8" y="4" width="3.2" height="16" rx="1.1" fill="currentColor" />
+          </svg>
+        </Link>
+        <button
+          type="button"
+          className="auth-control__button"
+          aria-label="Tancar sessió"
+          title="Tancar sessió"
+          onClick={() => {
+            logout();
+            onNavigate?.();
+            router.replace("/");
+            router.refresh();
+          }}
+        >
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <path
+              d="M10.5 4.75A7.25 7.25 0 1 0 10.5 19.25"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M14 8.25L18 12L14 15.75"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8.5 12H17.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

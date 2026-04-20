@@ -126,13 +126,18 @@ export async function GET(request: Request) {
     const firstDeparture = route.departureTimes[0] ?? "";
     const parsedTime = parseDepartureTime(firstDeparture);
     const routeUrl = `${baseUrl}/rutas/${route.slug}`;
+    const isCicloturista = route.routeType === "cicloturista";
+    const summary = isCicloturista ? `Marcha Cicloturista · ${route.name}` : route.name;
+    const departureLabel = route.departureTimes.join(" / ");
     const description = [
+      isCicloturista ? "Tipus: Marcha Cicloturista" : "Tipus: Ruta del club",
       `Població: ${route.town}`,
       `Punt d'eixida: ${route.meetingPoint}`,
-      `Hora eixida: ${route.departureTimes.join(" / ")}`,
-      `Lloc d'esmorzar: ${route.breakfastPlace}`,
+      `Hora eixida: ${departureLabel}`,
+      ...(isCicloturista ? [] : [`Lloc d'esmorzar: ${route.breakfastPlace}`]),
       `Km totals: ${route.kms}`,
       `Desnivell total: ${route.elevationGain} m`,
+      ...(isCicloturista && route.externalUrl ? [`Web oficial: ${route.externalUrl}`] : []),
       "",
       route.notes,
       "",
@@ -142,12 +147,12 @@ export async function GET(request: Request) {
     calendarLines.push("BEGIN:VEVENT");
     calendarLines.push(`UID:punxaeta-ruta-${route.slug}@punxaetaweb`);
     calendarLines.push(`DTSTAMP:${nowStamp}`);
-    calendarLines.push(line("SUMMARY", route.name));
+    calendarLines.push(line("SUMMARY", summary));
     calendarLines.push(line("DESCRIPTION", description));
     calendarLines.push(line("LOCATION", `${route.meetingPoint}, ${route.town}`));
     calendarLines.push(line("URL", routeUrl));
     calendarLines.push("STATUS:CONFIRMED");
-    calendarLines.push("CATEGORIES:RUTA");
+    calendarLines.push(`CATEGORIES:${isCicloturista ? "MARCHA-CICLOTURISTA" : "RUTA"}`);
 
     if (parsedTime) {
       calendarLines.push(

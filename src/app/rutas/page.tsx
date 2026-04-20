@@ -45,11 +45,13 @@ function normalizeSearchText(value: string) {
 
 function routeMatchesQuery(
   route: {
+    routeType?: "ruta" | "cicloturista";
     name: string;
     town: string;
     breakfastPlace: string;
     meetingPoint: string;
     notes: string;
+    externalUrl?: string | null;
     slug: string;
   },
   query: string,
@@ -65,6 +67,8 @@ function routeMatchesQuery(
     route.breakfastPlace,
     route.meetingPoint,
     route.notes,
+    route.routeType ?? "ruta",
+    route.externalUrl ?? "",
     route.slug,
   ]
     .map(normalizeSearchText)
@@ -189,6 +193,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
                   <div className="route-row__top">
                     <span className="pill">{buildDateLabel(route.date)}</span>
                     <span className="pill pill--subtle">{route.town}</span>
+                    {route.routeType === "cicloturista" ? <span className="pill">Marcha Cicloturista</span> : null}
                   </div>
                   <h2>{route.name}</h2>
                 </div>
@@ -200,7 +205,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
                   </div>
                   <div>
                     <dt>Hora eixida</dt>
-                    <dd>{route.departureTimes.join(" i ")}</dd>
+                    <dd>{route.departureTimes.join(" / ")}</dd>
                   </div>
                   <div>
                     <dt>Lloc d&apos;eixida</dt>
@@ -214,18 +219,27 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
                     <dt>Desnivell total</dt>
                     <dd>{route.elevationGain} m</dd>
                   </div>
-                  <div>
-                    <dt>Lloc d&apos;esmorzar</dt>
-                    <dd>{route.breakfastPlace}</dd>
-                  </div>
-                  <div>
-                    <dt>Km fins esmorzar</dt>
-                    <dd>{route.distanceToBreakfast} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell fins esmorzar</dt>
-                    <dd>{route.elevationToBreakfast} m</dd>
-                  </div>
+                  {route.routeType === "cicloturista" ? (
+                    <div>
+                      <dt>Tipus</dt>
+                      <dd>Marcha Cicloturista</dd>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <dt>Lloc d&apos;esmorzar</dt>
+                        <dd>{route.breakfastPlace}</dd>
+                      </div>
+                      <div>
+                        <dt>Km fins esmorzar</dt>
+                        <dd>{route.distanceToBreakfast} km</dd>
+                      </div>
+                      <div>
+                        <dt>Desnivell fins esmorzar</dt>
+                        <dd>{route.elevationToBreakfast} m</dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </Link>
             ))}

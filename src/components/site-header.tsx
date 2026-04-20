@@ -77,7 +77,8 @@ export function SiteHeader() {
               );
             })}
             <HeaderAuthControl
-              className={`${styles.authControl} ${styles.linkPill}`}
+              className={styles.authControl}
+              guestClassName={`${styles.link} ${styles.linkPill}`}
               onNavigate={() => setIsOpen(false)}
             />
           </nav>

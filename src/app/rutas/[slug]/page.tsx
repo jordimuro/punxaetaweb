@@ -50,7 +50,9 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
           </div>
 
           <div className="page-head page-head--tight">
-            <span className="eyebrow">Detall de ruta</span>
+            <span className="eyebrow">
+              {route.routeType === "cicloturista" ? "Marcha Cicloturista" : "Detall de ruta"}
+            </span>
             <h1>{route.name}</h1>
           </div>
 
@@ -78,18 +80,39 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
                   <dt>Desnivell total</dt>
                   <dd>{route.elevationGain} m</dd>
                 </div>
-                <div>
-                  <dt>Lloc d&apos;esmorzar</dt>
-                  <dd>{route.breakfastPlace}</dd>
-                </div>
-                <div>
-                  <dt>Km fins esmorzar</dt>
-                  <dd>{route.distanceToBreakfast} km</dd>
-                </div>
-                <div>
-                  <dt>Desnivell fins esmorzar</dt>
-                  <dd>{route.elevationToBreakfast} m</dd>
-                </div>
+                {route.routeType === "cicloturista" ? (
+                  <>
+                    <div>
+                      <dt>Tipus</dt>
+                      <dd>Marcha Cicloturista</dd>
+                    </div>
+                    {route.externalUrl ? (
+                      <div>
+                        <dt>Web oficial</dt>
+                        <dd>
+                          <a href={route.externalUrl} target="_blank" rel="noreferrer">
+                            Obrir web de la marxa
+                          </a>
+                        </dd>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <dt>Lloc d&apos;esmorzar</dt>
+                      <dd>{route.breakfastPlace}</dd>
+                    </div>
+                    <div>
+                      <dt>Km fins esmorzar</dt>
+                      <dd>{route.distanceToBreakfast} km</dd>
+                    </div>
+                    <div>
+                      <dt>Desnivell fins esmorzar</dt>
+                      <dd>{route.elevationToBreakfast} m</dd>
+                    </div>
+                  </>
+                )}
               </dl>
             </article>
 

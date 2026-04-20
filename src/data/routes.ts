@@ -1,4 +1,5 @@
 export type CyclingRoute = {
+  routeType?: "ruta" | "cicloturista";
   slug: string;
   name: string;
   date: string;
@@ -12,6 +13,7 @@ export type CyclingRoute = {
   summary: string;
   meetingPoint: string;
   notes: string;
+  externalUrl?: string | null;
   gpxFileName?: string | null;
   gpxPath?: string | null;
   gpxContent?: string | null;

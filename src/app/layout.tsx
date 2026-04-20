@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider, InstagramLink } from "@/components/auth";
+import { PageViewTracker } from "@/components/page-view-tracker";
 import { SiteHeader } from "@/components/site-header";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="ca">
       <body>
         <AuthProvider>
+          <PageViewTracker />
           <SiteHeader />
           <div className="site-shell">
             <main>{children}</main>

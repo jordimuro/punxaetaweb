@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { AuthOnly } from "@/components/auth";
 import type { RouteFormState, RouteFormValues } from "@/lib/routes";
 
@@ -29,8 +29,10 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
     values: initialValues,
     errors: {},
   });
+  const [routeType, setRouteType] = useState<"ruta" | "cicloturista">(initialValues.routeType);
   const formKey = JSON.stringify(state.values);
   const dateError = state.errors.date;
+  const isCicloturista = routeType === "cicloturista";
 
   return (
     <AuthOnly
@@ -69,6 +71,23 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
 
           <div className="form-grid">
             <label className="field">
+              <span>Tipus</span>
+              <select
+                name="routeType"
+                defaultValue={state.values.routeType}
+                onChange={(event) =>
+                  setRouteType(
+                    event.currentTarget.value === "cicloturista" ? "cicloturista" : "ruta",
+                  )
+                }
+              >
+                <option value="ruta">Ruta del club</option>
+                <option value="cicloturista">Marxa cicloturista</option>
+              </select>
+              <FieldError message={state.errors.routeType} />
+            </label>
+
+            <label className="field">
               <span>Slug URL</span>
               <input name="slug" defaultValue={state.values.slug} placeholder="nom-de-la-ruta" />
               <FieldError message={state.errors.slug} />
@@ -99,41 +118,64 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
               <FieldError message={state.errors.town} />
             </label>
 
-            <label className="field">
-              <span>Lloc d&apos;esmorzar</span>
-              <input
-                name="breakfastPlace"
-                defaultValue={state.values.breakfastPlace}
-                placeholder="Bar, poble o punt d'esmorzar"
-              />
-              <FieldError message={state.errors.breakfastPlace} />
-            </label>
+            {isCicloturista ? (
+              <label className="field field--full">
+                <span>Web oficial de la marxa</span>
+                <input
+                  name="externalUrl"
+                  type="url"
+                  defaultValue={state.values.externalUrl}
+                  placeholder="https://..."
+                />
+                <FieldError message={state.errors.externalUrl} />
+              </label>
+            ) : (
+              <label className="field">
+                <span>Lloc d&apos;esmorzar</span>
+                <input
+                  name="breakfastPlace"
+                  defaultValue={state.values.breakfastPlace}
+                  placeholder="Bar, poble o punt d'esmorzar"
+                />
+                <FieldError message={state.errors.breakfastPlace} />
+              </label>
+            )}
 
-            <label className="field">
-              <span>Distància fins a esmorzar</span>
-              <input
-                type="number"
-                name="distanceToBreakfast"
-                defaultValue={state.values.distanceToBreakfast}
-                min="0"
-                step="1"
-                placeholder="Km fins a esmorzar"
-              />
-              <FieldError message={state.errors.distanceToBreakfast} />
-            </label>
+            {!isCicloturista ? (
+              <>
+                <label className="field">
+                  <span>Distància fins a esmorzar</span>
+                  <input
+                    type="number"
+                    name="distanceToBreakfast"
+                    defaultValue={state.values.distanceToBreakfast}
+                    min="0"
+                    step="1"
+                    placeholder="Km fins a esmorzar"
+                  />
+                  <FieldError message={state.errors.distanceToBreakfast} />
+                </label>
 
-            <label className="field">
-              <span>Desnivell fins a esmorzar</span>
-              <input
-                type="number"
-                name="elevationToBreakfast"
-                defaultValue={state.values.elevationToBreakfast}
-                min="0"
-                step="1"
-                placeholder="Metres fins a esmorzar"
-              />
-              <FieldError message={state.errors.elevationToBreakfast} />
-            </label>
+                <label className="field">
+                  <span>Desnivell fins a esmorzar</span>
+                  <input
+                    type="number"
+                    name="elevationToBreakfast"
+                    defaultValue={state.values.elevationToBreakfast}
+                    min="0"
+                    step="1"
+                    placeholder="Metres fins a esmorzar"
+                  />
+                  <FieldError message={state.errors.elevationToBreakfast} />
+                </label>
+              </>
+            ) : (
+              <>
+                <input type="hidden" name="breakfastPlace" value={state.values.breakfastPlace || "Marxa cicloturista"} />
+                <input type="hidden" name="distanceToBreakfast" value="0" />
+                <input type="hidden" name="elevationToBreakfast" value="0" />
+              </>
+            )}
 
             <label className="field">
               <span>Punt d&apos;eixida</span>
@@ -146,15 +188,19 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
             </label>
 
             <label className="field">
-              <span>Eixida 1</span>
+              <span>Hora d&apos;eixida</span>
               <input name="departureTimeOne" defaultValue={state.values.departureTimeOne} placeholder="08:00" />
               <FieldError message={state.errors.departureTimeOne} />
             </label>
 
-            <label className="field">
-              <span>Eixida 2</span>
-              <input name="departureTimeTwo" defaultValue={state.values.departureTimeTwo} placeholder="08:30" />
-            </label>
+            {!isCicloturista ? (
+              <label className="field">
+                <span>Eixida 2</span>
+                <input name="departureTimeTwo" defaultValue={state.values.departureTimeTwo} placeholder="08:30" />
+              </label>
+            ) : (
+              <input type="hidden" name="departureTimeTwo" value="" />
+            )}
 
             <label className="field">
               <span>Kms</span>
@@ -183,6 +229,20 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
                 placeholder="Itinerari, variants, observacions..."
               />
               <FieldError message={state.errors.notes} />
+            </label>
+
+            <label className="field field--full">
+              <span>Fitxer GPX (opcional)</span>
+              <input
+                type="file"
+                name="gpxFile"
+                accept=".gpx,application/gpx+xml,application/xml,text/xml"
+              />
+              {state.values.gpxFileName ? (
+                <small className="field__hint">GPX actual: {state.values.gpxFileName}</small>
+              ) : (
+                <small className="field__hint">Pots afegir el GPX ara o en una edició posterior.</small>
+              )}
             </label>
           </div>
 

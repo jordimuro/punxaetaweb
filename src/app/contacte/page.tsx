@@ -39,8 +39,9 @@ export default function ContactPage() {
                 <h2>Informació del club</h2>
                 <p>
                   El club treballa rutes setmanals, el Trofeu Vila de Muro-Punxaeta i la
-                  secció d&apos;equipacions. Si vols col·laborar o rebre més detalls, escriu
-                  al nostre Instagram.
+                  secció d&apos;equipacions. Si vols col·laborar o rebre més detalls, pots
+                  contactar-nos per Instagram o enviar-nos un correu a{" "}
+                  <a href="mailto:lapunxaetamuro@gmail.com">lapunxaetamuro@gmail.com</a>.
                 </p>
               </div>
               <ul className="contact-card__list">
@@ -55,6 +56,12 @@ export default function ContactPage() {
                 <li>
                   <strong>Xarxa</strong>
                   <span>Instagram del club</span>
+                </li>
+                <li>
+                  <strong>Correu</strong>
+                  <span>
+                    <a href="mailto:lapunxaetamuro@gmail.com">lapunxaetamuro@gmail.com</a>
+                  </span>
                 </li>
               </ul>
             </div>

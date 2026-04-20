@@ -26,6 +26,7 @@ export async function saveRouteAction(
   formData: FormData,
 ): Promise<RouteFormState> {
   const parsed = parseRouteFormData(formData);
+  const gpxFile = formData.get("gpxFile");
 
   if (Object.keys(parsed.errors).length > 0) {
     return parsed;
@@ -37,6 +38,10 @@ export async function saveRouteAction(
     route = parsed.values.id
       ? await updateRoute(parsed.values)
       : await createRoute(parsed.values);
+
+    if (gpxFile instanceof File && gpxFile.size > 0) {
+      await saveRouteGpx(route.slug, gpxFile);
+    }
   } catch (error) {
     if (
       typeof error === "object" &&
@@ -78,18 +83,4 @@ export async function deleteRouteAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/rutas");
   redirect("/rutas");
-}
-
-export async function saveRouteGpxAction(formData: FormData) {
-  const slug = String(formData.get("slug") ?? "").trim();
-  const file = formData.get("gpxFile");
-
-  if (!slug || !(file instanceof File) || file.size === 0) {
-    redirect(`/rutas/${slug}`);
-  }
-
-  await saveRouteGpx(slug, file);
-  revalidatePath("/rutas");
-  revalidatePath(`/rutas/${slug}`);
-  redirect(`/rutas/${slug}`);
 }
