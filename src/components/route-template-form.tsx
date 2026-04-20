@@ -3,19 +3,13 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { AuthOnly } from "@/components/auth";
-import type { RouteFormState, RouteFormValues } from "@/lib/routes";
+import type { RouteTemplateFormState, RouteTemplateFormValues } from "@/lib/route-templates";
 
-type RouteFormProps = {
-  action: (state: RouteFormState, formData: FormData) => Promise<RouteFormState>;
-  initialValues: RouteFormValues;
+type RouteTemplateFormProps = {
+  action: (state: RouteTemplateFormState, formData: FormData) => Promise<RouteTemplateFormState>;
+  initialValues: RouteTemplateFormValues;
   title: string;
   submitLabel: string;
-  templateOptions?: Array<{
-    slug: string;
-    name: string;
-    routeType: "ruta" | "cicloturista";
-  }>;
-  templateSelection?: string;
 };
 
 function FieldError({ message, id }: { message?: string; id?: string }) {
@@ -30,36 +24,25 @@ function FieldError({ message, id }: { message?: string; id?: string }) {
   );
 }
 
-export function RouteForm({
-  action,
-  initialValues,
-  title,
-  submitLabel,
-  templateOptions = [],
-  templateSelection = "",
-}: RouteFormProps) {
+export function RouteTemplateForm({ action, initialValues, title, submitLabel }: RouteTemplateFormProps) {
   const [state, formAction, isPending] = useActionState(action, {
     values: initialValues,
     errors: {},
   });
   const [routeType, setRouteType] = useState<"ruta" | "cicloturista">(initialValues.routeType);
   const formKey = JSON.stringify(state.values);
-  const dateError = state.errors.date;
   const isCicloturista = routeType === "cicloturista";
-  const canLoadFromDatabase = !state.values.id;
 
   return (
     <AuthOnly
       fallback={
         <div className="panel auth-gate">
           <span className="panel__label">Accés privat</span>
-          <h2>Inicia sessió per a crear o editar rutes.</h2>
-          <p>
-            Les funcions de manteniment només apareixen per a l&apos;usuari autoritzat.
-          </p>
+          <h2>Inicia sessió per a gestionar la base de dades de rutes.</h2>
+          <p>Esta vista només està disponible en mode administració.</p>
           <div className="form-actions">
             <Link className="button button--secondary" href="/rutas">
-              Tornar al llistat
+              Tornar a rutes
             </Link>
             <Link className="button button--primary" href="/login">
               Iniciar sessió
@@ -69,41 +52,8 @@ export function RouteForm({
       }
     >
       <div className="form-shell">
-        {canLoadFromDatabase ? (
-          <div className="panel route-template-loader">
-            <span className="panel__label">Des de DB</span>
-            <h2>Crear nova ruta des de la base de dades del club</h2>
-            <form method="get" className="route-template-loader__form">
-              <label className="field">
-                <span>Ruta base guardada</span>
-                <select name="plantilla" defaultValue={templateSelection}>
-                  <option value="">Selecciona una ruta base...</option>
-                  {templateOptions.map((template) => (
-                    <option key={template.slug} value={template.slug}>
-                      {template.name} · {template.routeType === "cicloturista" ? "Marxa cicloturista" : "Ruta del club"}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="route-template-loader__actions">
-                <button type="submit" className="button button--secondary" disabled={templateOptions.length === 0}>
-                  Carregar dades
-                </button>
-                <Link className="text-link" href="/rutas/llistat">
-                  Gestionar DB de rutes
-                </Link>
-                {templateOptions.length === 0 ? (
-                  <span className="route-template-loader__empty">
-                    Encara no hi ha rutes en la DB. Crea la primera en Llistat Rutes.
-                  </span>
-                ) : null}
-              </div>
-            </form>
-          </div>
-        ) : null}
-
         <div className="page-head page-head--tight">
-          <span className="eyebrow">Ruta</span>
+          <span className="eyebrow">DB Rutes</span>
           <h1>{title}</h1>
         </div>
 
@@ -126,9 +76,7 @@ export function RouteForm({
                 name="routeType"
                 defaultValue={state.values.routeType}
                 onChange={(event) =>
-                  setRouteType(
-                    event.currentTarget.value === "cicloturista" ? "cicloturista" : "ruta",
-                  )
+                  setRouteType(event.currentTarget.value === "cicloturista" ? "cicloturista" : "ruta")
                 }
               >
                 <option value="ruta">Ruta del club</option>
@@ -139,7 +87,7 @@ export function RouteForm({
 
             <label className="field">
               <span>Slug URL</span>
-              <input name="slug" defaultValue={state.values.slug} placeholder="nom-de-la-ruta" />
+              <input name="slug" defaultValue={state.values.slug} placeholder="nom-de-la-ruta-base" />
               <FieldError message={state.errors.slug} />
             </label>
 
@@ -147,19 +95,6 @@ export function RouteForm({
               <span>Nom</span>
               <input name="name" defaultValue={state.values.name} placeholder="Nom de la ruta" />
               <FieldError message={state.errors.name} />
-            </label>
-
-            <label className="field">
-              <span>Data</span>
-              <input
-                type="date"
-                name="date"
-                defaultValue={state.values.date}
-                className={dateError ? "field-input--error" : undefined}
-                aria-invalid={Boolean(dateError)}
-                aria-describedby={dateError ? "route-date-error" : undefined}
-              />
-              <FieldError id="route-date-error" message={dateError} />
             </label>
 
             <label className="field">
@@ -201,7 +136,6 @@ export function RouteForm({
                     defaultValue={state.values.distanceToBreakfast}
                     min="0"
                     step="1"
-                    placeholder="Km fins a esmorzar"
                   />
                   <FieldError message={state.errors.distanceToBreakfast} />
                 </label>
@@ -214,7 +148,6 @@ export function RouteForm({
                     defaultValue={state.values.elevationToBreakfast}
                     min="0"
                     step="1"
-                    placeholder="Metres fins a esmorzar"
                   />
                   <FieldError message={state.errors.elevationToBreakfast} />
                 </label>
@@ -263,43 +196,25 @@ export function RouteForm({
 
                 <label className="field">
                   <span>Desnivell recorregut 1</span>
-                  <input
-                    type="number"
-                    name="elevationGain"
-                    defaultValue={state.values.elevationGain}
-                    min="0"
-                    step="1"
-                  />
+                  <input type="number" name="elevationGain" defaultValue={state.values.elevationGain} min="0" step="1" />
                   <FieldError message={state.errors.elevationGain} />
                 </label>
 
                 <label className="field field--full">
                   <span>Nom recorregut 2</span>
-                  <input
-                    name="gpxRouteNameSecondary"
-                    defaultValue={state.values.gpxRouteNameSecondary}
-                    placeholder="Opcional"
-                  />
+                  <input name="gpxRouteNameSecondary" defaultValue={state.values.gpxRouteNameSecondary} placeholder="Opcional" />
                   <FieldError message={state.errors.gpxRouteNameSecondary} />
                 </label>
 
                 <label className="field">
                   <span>Punt d&apos;eixida recorregut 2</span>
-                  <input
-                    name="meetingPointSecondary"
-                    defaultValue={state.values.meetingPointSecondary}
-                    placeholder="Punt d'eixida recorregut 2"
-                  />
+                  <input name="meetingPointSecondary" defaultValue={state.values.meetingPointSecondary} placeholder="Punt d'eixida recorregut 2" />
                   <FieldError message={state.errors.meetingPointSecondary} />
                 </label>
 
                 <label className="field">
                   <span>Hora d&apos;eixida recorregut 2</span>
-                  <input
-                    name="departureTimeSecondary"
-                    defaultValue={state.values.departureTimeSecondary}
-                    placeholder="08:15"
-                  />
+                  <input name="departureTimeSecondary" defaultValue={state.values.departureTimeSecondary} placeholder="08:15" />
                   <FieldError message={state.errors.departureTimeSecondary} />
                 </label>
 
@@ -311,13 +226,7 @@ export function RouteForm({
 
                 <label className="field">
                   <span>Desnivell recorregut 2</span>
-                  <input
-                    type="number"
-                    name="elevationGainSecondary"
-                    defaultValue={state.values.elevationGainSecondary}
-                    min="0"
-                    step="1"
-                  />
+                  <input type="number" name="elevationGainSecondary" defaultValue={state.values.elevationGainSecondary} min="0" step="1" />
                   <FieldError message={state.errors.elevationGainSecondary} />
                 </label>
 
@@ -327,11 +236,7 @@ export function RouteForm({
               <>
                 <label className="field">
                   <span>Punt d&apos;eixida</span>
-                  <input
-                    name="meetingPoint"
-                    defaultValue={state.values.meetingPoint}
-                    placeholder="Punt d'eixida"
-                  />
+                  <input name="meetingPoint" defaultValue={state.values.meetingPoint} placeholder="Punt d'eixida" />
                   <FieldError message={state.errors.meetingPoint} />
                 </label>
 
@@ -354,13 +259,7 @@ export function RouteForm({
 
                 <label className="field">
                   <span>Desnivell total</span>
-                  <input
-                    type="number"
-                    name="elevationGain"
-                    defaultValue={state.values.elevationGain}
-                    min="0"
-                    step="1"
-                  />
+                  <input type="number" name="elevationGain" defaultValue={state.values.elevationGain} min="0" step="1" />
                   <FieldError message={state.errors.elevationGain} />
                 </label>
 
@@ -399,11 +298,7 @@ export function RouteForm({
 
             <label className={isCicloturista ? "field" : "field field--full"}>
               <span>{isCicloturista ? "GPX recorregut 1 (opcional)" : "Fitxer GPX (opcional)"}</span>
-              <input
-                type="file"
-                name="gpxFile"
-                accept=".gpx,application/gpx+xml,application/xml,text/xml"
-              />
+              <input type="file" name="gpxFile" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
               {state.values.gpxFileName ? (
                 <small className="field__hint">GPX actual: {state.values.gpxFileName}</small>
               ) : (
@@ -412,26 +307,20 @@ export function RouteForm({
             </label>
 
             {isCicloturista ? (
-              <>
-                <label className="field">
-                  <span>GPX recorregut 2 (opcional)</span>
-                  <input
-                    type="file"
-                    name="gpxFileSecondary"
-                    accept=".gpx,application/gpx+xml,application/xml,text/xml"
-                  />
-                  {state.values.gpxFileNameSecondary ? (
-                    <small className="field__hint">GPX actual: {state.values.gpxFileNameSecondary}</small>
-                  ) : (
-                    <small className="field__hint">Pots afegir el segon GPX ara o en una edició posterior.</small>
-                  )}
-                </label>
-              </>
+              <label className="field">
+                <span>GPX recorregut 2 (opcional)</span>
+                <input type="file" name="gpxFileSecondary" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
+                {state.values.gpxFileNameSecondary ? (
+                  <small className="field__hint">GPX actual: {state.values.gpxFileNameSecondary}</small>
+                ) : (
+                  <small className="field__hint">Pots afegir el segon GPX ara o en una edició posterior.</small>
+                )}
+              </label>
             ) : null}
           </div>
 
           <div className="form-actions">
-            <Link className="button button--secondary" href="/rutas">
+            <Link className="button button--secondary" href="/rutas/llistat">
               Cancel·lar
             </Link>
             <button className="button button--primary" type="submit" disabled={isPending}>

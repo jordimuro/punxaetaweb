@@ -9,7 +9,7 @@ import styles from "./site-header.module.css";
 
 const navigation = [
   { href: "/", label: "Inici" },
-  { href: "/rutas", label: "Rutes" },
+  { href: "/rutas", label: "Calendari" },
   { href: "/publicacions", label: "Fotos" },
   { href: "/carrera-ciclista", label: "Trofeu Vila de Muro-Punxaeta" },
   { href: "/equipaciones", label: "Equipacions" },

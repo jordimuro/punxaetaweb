@@ -247,6 +247,19 @@ export function HeaderAuthControl({
             <rect x="16.8" y="4" width="3.2" height="16" rx="1.1" fill="currentColor" />
           </svg>
         </Link>
+        <Link
+          className="auth-control__link"
+          href="/rutas/llistat"
+          onClick={onNavigate}
+          aria-label="Obrir llistat de rutes base"
+          title="Llistat Rutes"
+        >
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <ellipse cx="12" cy="6" rx="7.5" ry="3.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M4.5 6v5.8c0 1.8 3.4 3.2 7.5 3.2s7.5-1.4 7.5-3.2V6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M4.5 11.8v5.8c0 1.8 3.4 3.2 7.5 3.2s7.5-1.4 7.5-3.2v-5.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </Link>
         <button
           type="button"
           className="auth-control__button"

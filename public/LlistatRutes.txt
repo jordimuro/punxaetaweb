@@ -1,0 +1,175 @@
+RUTES
+LA PUNXAETA
+
+1.	BENEIXAMA per Banyeres - 93Km ↑1200m
+Recorregut: Muro – Cocentaina – Alcoi – Font dels Patos – Banyeres (opció allargar per Biar 57Km) - Beneixama 43km ↑650m (Esmorzar) – Càmping  Mariola  –  Alcoi  –  Cocentaina – Muro. 
+(Opció tornada Bocairent directe)
+
+2.	BENEIXAMA per Canalís - 108Km ↑1550m
+Recorregut: Muro – Cocentaina – Alcoi – Font dels Patos – Onil – Port del Canalís - Banyeres - Beneixama 60km ↑950m (Esmorzar) – Càmping  Mariola  –  Alcoi  –  Cocentaina – Muro. 
+(Opció tornada Bocairent directe)
+
+3.	BENEIXAMA pel Moro - 107Km ↑1400m
+Recorregut: Muro – Agres – Alfafara – Ontinyent – Fontanars dels Alforins - Port del Moro - Beneixama (Esmorzar) 52Km ↑900 – Camp de Mirra - Biar – Banyeres - Bocairent – Alfafara – Agres – Muro. 
+
+4.	BOCAIRENT – 94Km ↑1200m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Ràfol de Salem – Beniatjar - Carrícola – Atzeneta d’Albaida – Ontinyent - Pous Clars – Bocairent (Esmorzar) 52 km ↑750m– Banyeres de Mariola – Alcoi – Cocentaina – Muro.
+
+5.	CAUDETE – 116Km ↑900 m
+Recorregut: Muro – Agres – Alfafara – Bocairent – Beneixama - La Canyada – Villena - Caudete (Esmorzar) 58km ↑450m - Villena - La Canyada - Beneixama – Bocairent -Alfafara – Agres - Muro. 
+
+6.	IECLA – 136Km ↑900 m 
+Recorregut: Muro – Agres – Alfafara – Bocairent – Beneixama – El Camp de Mirra – Canyada – Villena – Iecla (Esmorzar) 68 km ↑550 m – Villena – Canyada – El Camp de Mirra – Beneixama – Bocairent – Alfafara – Agres – Muro.
+
+7.	SALINAS – 124Km ↑900 m
+Recorregut: Muro – Agres – Alfafara – Bocairent – Beneixama – El Camp de Mirra – Cañada – Villena – Salinas (Esmorzar) 62 km ↑500 m – Villena – Cañada – El Camp de Mirra – Beneixama – Bocairent – Alfafara – Agres – Muro.
+
+8.	FONT DE LA FIGUERA (Anada Onti – tornada Pou Clar) - 100Km ↑1225m 
+Recorregut: Muro – Agres – Alfafara – Ontinyent – Font de la Figuera (Esmorzar) 50km ↑590m – Fontanars dels Alforins – Pou Clar –Alfafara – Agres – Muro. 
+
+9.	FONT DE LA FIGUERA (pel Moro) – 107Km ↑1450m
+Recorregut: Muro – Agres – Alfafara – Bocairent – Beneixama – Port del Moro – Fontanars dels Alforins – Font de la Figuera (Esmorzar) 57Km ↑800m – Fontanars dels Alforins – Pou Clar – Alfafara – Agres – Muro.
+
+10.	MOIXENT per Portixol – 105Km ↑1550m
+Recorregut: Muro – Agres – Alfafara – Pous Clars – Fontanars dels Alforins –Moixent (Esmorzar) 45 km ↑750 m– El Bosquet - Portitxol – Ontinyent - Alfafara - Agres – Muro.
+
+11.	MOIXENT per Fontanars – 104 Km ↑1500m
+Recorregut: Muro – Agres – Alfafara – Pous Clars – Fontanars dels Alforins –Moixent (Esmorzar) 60 km ↑600 m– El Bosquet - Portitxol – Ontinyent - Alfafara - Agres – Muro.
+
+12.	NAVALÓN pel Portixol – 125Km ↑1900m
+Recorregut: Muro – Agres – Alfafara – Ontinyent - Portixol – Moixent – Cumbres del Sol – Navalón (Esmorzar) 60km ↑1300m – Torre Tallada – Font de a Figuera - Fontanars dels Alforins – Pou Clar – Alfafara – Agres – Muro. 
+
+13.	NAVALÓN per Torre Tallada – 125Km  ↑2000m
+Recorregut: Muro – Agres – Alfafara – Ontinyent – Fontanars - Font de la Figuera - Torre Tallada – Navalón (Esmorzar) 65km ↑1000m – Cumbres del Sol – Moixent – Bosquet – Portixol - Ontinyent - Pou Clar – Alfafara – Agres – Muro. 
+
+14.	ONTINYENTper Salem – 94Km  ↑1200m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Ràfol de Salem – Beniatjar -Carrícola – Atzeneta d’Albaida – Ontinyent(Esmorzar) 40km ↑500m Pous Clars – Bocairent – Banyeres de Mariola – Alcoi – Cocentaina – Muro
+
+15.	AIELO (Per l’Aljorf) – 91Km ↑1365 m
+Recorregut: Muro - Setla de Nunyes – Gaianes – Beniarrés - Port de Salem – Castelló de Rugat – Ràfol de Salem - Beniatjar – Carrícola - Atzeneta d’Albaida – Albaida – l’Aljorf - Aielo (Esmorzar) 40 Km ↑500 - Port del Paller – Portixol – Ontinyent - Alfafara – Agres – Muro. )
+
+16.	BENIGÀNIM  - 99Km ↑1150m
+Recorregut: Muro – Agres – Alfafara - Ontinyent – Aielo - Olleria - Montaverner - Alfarrasí – Pantà de Bellús - Benigànim (Esmorzar) 50 Km ↑480 –Quatretonda – Llutxent -  Castelló de Rugat – Port  de Salem – Beniarrés – Gaianes – Setla de Nunyes – Muro.
+
+17.	BENIGÀNIM  per Salem – 99Km ↑1150 m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Montitxelvo – Benicolet – Llutxet – Quatretonda – Benigànim (Esmorzar) 40Km ↑450 – Guadaséquies – Alfarrassí – Motaverner – Palomar - Atzaneta – Carrícola -Beniatjar – Ràfol- Beniarrés- Gaianes – Setla -Muro.
+
+18.	BENIGÀNIM – 93Km ↑1140m
+Recorregut: Muro – Agres – Alfafara - Ontinyent – Albaida - Montaverner - Alfarrasí - Benigànim (Esmorzar) 50 Km ↑480 –Quatretonda – Llutxent -  Castelló de Rugat – Port  de Salem – Beniarrés – Gaianes – Setla de Nunyes – Muro.
+
+19.	MANUEL – 100Km ↑1000m 
+Recorregut: Muro – Gaianes – Beniarrés – Port de Salem – Castelló – La Pobla del Duc – Benigànim–  Port de Genovés – Lloc Nou de Fenollet – Manuel 50km ↑500 m (Esmorzar) – Lloc Nou de Fenollet – Port de Genovés – Benigànim – La Pobla del Duc – Castelló – Port de Salem – Beniarrés – Gaianes - Muro.
+
+20.	XÀTIVA o GENOVÉS - 108Km↑1500m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Montitxelvo – Benicolet – Llutxet – Quatretonda – Genovés - Xàtiva (Esmorzar) 50Km ↑550 – Serra Grossa – Bellús – Alfarrasí – Montaverner – Albaida – Ontinyent - Pou Clar – Alfafara – Agres – Muro.
+
+21.	BARX – 111Km ↑1600m ( Opció Mondúber abans d’esmorzar) 
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Rugat – Montitxelvo – Marxuquera – Barx (Esmorzar) 47km ↑700m – Pla de Corrals – Barxeta – Llocnou - Benigànim - La Pobla del Duc – Castelló de Rugat - Port de Salem – Beniarrés Gaianes – Setla de Nunyes – Muro.
+
+22.	PLA DE CORRALS – 100Km ↑1350m
+Recorregut: Muro – Port de Salem – Castelló de Rugat - La Pobla del Duc - Benigànim – Llocnou d’en Fenollet – Barxeta – Pla de Corrals (Esmorzar) 51 km ↑650 m - Barxeta – Llocnou d’en Fenollet – Benigànim – La Pobla - Port de Salem  – Muro
+
+23.	VILALLONGA - LLACUNA– 94Km ↑1200 m
+Recorregut: Muro – Benimarfull – Planes – Port de Margarida – Patró – La Carroja – Benissivà – Benialí – L’Atzúbia – Pego – Oliva – La Font d’en Carròs – Beniflà – Vilallonga Llacuna – Port de la Llacuna – L’Orxa (Esmorzar) 59 km ↑1000 m- Beniarrés - Gaianes – Muro
+
+24.	FORNA per Llacuna - 102Km ↑1400 m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – L’Orxa – Llacuna – Vilallonga – Font d’Encarrós – Oliva – Forna - (Esmorzar) 55 km ↑700m Benialí - Beniaia – Benissivà – La Carroja – Patró – Beniarrés - Gaianes – Muro.
+
+25.	FORNA - 100Km ↑1150 m
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Montixelvo – Beniflà – La Font d’en Carròs – Oliva – Forna (Esmorzar) 62 Km ↑470 – Benialí - Beniaia – Benissivà – La Carroja – Patró – Planes - Benimarfull – Muro.
+
+26.	L’ATZÚBIA, PEGO (Volta a Gandia) – 100Km ↑1050 m 
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Montixelvo – Beniflà – La Font d’en Carròs – Oliva – Pego - L’Atzúbia (Esmorzar) 62 Km ↑470  –Benialí - Beniaia – Benissivà – La Carroja – Patró – Planes - Benimarfull – Muro.
+
+27.	VOLTA GANDIA (via servei fins Marxuquera) i FORNA  - 100Km ↑1350
+Recorregut: Muro – Setla de Nunyes – Gaianes – Beniarrés – Port de Beniarrés – Castelló de Rugat – Montixelvo – Beniflà – La Font d’en Carròs – Oliva – Forna - L’Atzúbia (Esmorzar) 59 Km ↑600 – Benialí - Beniaia – Benissivà – La Carroja – Patró – Planes - Benimarfull – Muro.
+
+28.	L’ATZÚBIA (Per Ebo) - 90Km  ↑1400 m
+Recorregut: Muro – Benimarfull – Planes – Margarida - Alcalà – Ebo  – Pego – L'Atzúbia(Esmorzar) 50km↑ 700m – Benialí – Beniaia – Benissivà – La Carroja – Patró – Planes – Benimarfull – Muro.
+
+29.	EBO per Gallinera – 96Km ↑1630m  ( Opcions Tornada: Margarida, Tollos o Petracos)
+Recorregut: Muro – Benimarfull - Planes - Patró -La Carroja – Benissivà - Benialí - Pego - Ebo (Esmorzar) 53 Km ↑850  – Alcalà de la Jovada – Beniaia – Tollos – Benimassot – Balones – Milleneta – Benillup – Muro.
+
+30.	EBO per Petracos  –  95Km  ↑1600m 
+Recorregut: Muro – Cocentaina – Millena – Balones – Benimassot – Fageca – Famorca – Castell de Castells – Petracos – Ebo (Esmorzar) 51Km ↑800m – Alcalà de la Jovada – Beniaia – Tollos – Benimassot – Balones – Milleneta – Benillup – Muro. 
+Opció tornada per Gallinera.
+
+31.	DÈNIA – 126 Km ↑1500 m
+Recorregut: Muro – Benimarfull – Planes – Port de Margarida - Margarida – Alcalà de la Jovada – La Vall d’Ebo – Port Vall d’Ebo  – Sagra – Ondara – La Xara - Dènia (Esmorzar) 66 km ↑650 m – El Verger - Pego - L’Atzúbia   – Benialí - Beniaia – Benissivà – La Carroja – Patró – Planes - Benimarfull – Muro. 
+
+32.	BENIGEMBLA  per Castells – 100Km ↑1600 m
+Recorregut: Muro – Cocentaina – Millena – Gorga – Balones – Benimassot – Fageca – Famorca – Castell de Castells – Benigembla (Esmorzar) 49Km ↑612m – Castells de Castells - Famorca – Fageca – Benimassot – Balones – Gorga – Millena – Cocentaina – Muro.
+
+33.	BENIGEMBLA per Petracos – 110Km ↑1600 m 
+Recorregut: Muro – Benimarfull – Planes - Alcalà - Vall d´Ebo - Pla de Petracos – Benigembla (esmorzar) 48 km ↑700 m  Castells de Castells - Famorca – Fageca – Benimassot – Balones – Gorga – Millena – Cocentaina – Muro.
+Opció tornada: Orba - Tormos - Sarga – Pego – Vall de Gallinera – Planes - Benimarfull - Muro.
+
+34.	BENIMAURELL (Vall de Laguart) – 110Km ↑1700 m 
+Recorregut: Muro – Cocentaina – Millena – Gorga – Balones – Benimassot – Fageca – Famorca – Castell de Castells – Benimaurell (esmorzar) 50km ↑1000m - Fleix – Campell – Orba – Benigembla - Castells de Castells - Famorca – Fageca – Benimassot – Balones – Gorga – Millena – Cocentaina – Muro.
+Opció tornada: - Tormos - Sarga – Pego – Vall de Gallinera – Planes - Benimarfull – Muro.
+
+35.	TÀRBENA – 96Km ↑1500m 
+Recorregut: Muro – Cocentaina – Millena – Gorga – Balones – Benimassot – Fageca – Famorca – Castells de Castells  – Port de Sa Creueta – Tàrbena (Esmorzar) 48 km ↑800 m - Port de Sa Creueta  - Castells de Castells  – Famorca  – Fageca  –  Benimassot  –  Balones  – Gorga  –  Milllena  –  Cocentaina  –  Muro. (Opcional  Tornada  per  Callosa)
+
+36.	CALLOSA D’EN SARRIÀ – 100Km ↑1750 m (Opcions tornada: Confrides  o Tàrbena)
+Recorregut: Muro – Cocentaina – Benilloba – Benasau – Ares del Bosque – Port de Confrides – Confrides – Benimantell – El Castell de Guadalest - Callosa d’en Sarrià (Esmorzar) 49 km ↑700m – El Castell de Guadalest – Benimantell – Confrides – Port de Confrides – Ares del Bosque – Benasau – Benilloba – Cocentaina – Muro.
+
+37.	PENAGUILA o BENIFALLIM (Tudons fent el huit) – 100Km ↑1530m
+Recorregut: Muro – Cocentaina – Benilloba – Benasau  – Penàguila – Base Aitana «Tudons» - Mas de Seguró  - Safari Aitana – Base Aitana «Tudons» - Alcoleja – Penàguila - Benifallim (Esmorzar) 45 km ↑820 m – La Serreta (Les Alcoies) - Benilloba – Gorga – Balones – Benimassot – Tollos – Alt de Tollos – Beniaia – Margarida – Planes – Benimarfull – Muro.
+
+38.	LA VILAJOISA – 104 Km ↑2000 m
+Recorregut: Muro – Cocentaina – Benilloba – Benasau - Alcoleja – Port de Tudons – Sella - Orxeta – La Vila (Esmorzar) 52 km ↑850 m – Orxeta – Sella – Tudons – Alcoleja – Benasau – Benilloba – Cocentaina – Muro.
+
+ 
+39.	RELLEU per la Torre – 90 Km ↑1800 m
+Recorregut: Muro – Cocentaina – Benifallim – La Torre – Relleu (Esmorzar) 42 Km ↑940m – Alt de la Rapella - Port de Tudons – Alcoleja – Benasau - Gorga – Milleneta – Benillup – Benimarfull – Muro. 
+Opció tornada per Sella 
+
+40.	RELLEU per Tudons – 100Km ↑2000m 
+Recorregut: Muro – Cocentaina – Benilloba – Benasau  – Alcoleja – Base Aitana «Tudons» - Sella – Relleu (Esmorzar) 48 km ↑1000 m – Port del Collao - La Torre – Benifallim - La Serreta (Les Alcoies) – Cocentaina - Muro
+
+41.	 LA TORRE DE LES MAÇANES per la Carrasqueta – 92 Km ↑1550 m 
+Recorregut: Muro - Cocentaina - Alcoi - Port de La Carrasqueta - La Torre de les Maçanes (Esmorzar) 38Km 950m – Benifallim – Penàguila - Benasau – Gorga – Millena – Benillup – Benimarfull – Muro.
+Altres Opcions Tornada: 
+A) Port del Collao – Relleu – Sella – Tudons – Alcoleja – Benasau – Benilloba – Cocentaina – Muro.  
+B) Xixona Port de La Carrasqueta – Alcoi (per Viaducte) – Cocentaina  – Muro
+
+42.	LA TORRE DE LES MAÇANES per Benifallim – 92 Km ↑1550 m
+Recorregut: Muro - Cocentaina – Benilloba - Les Alcoies ( La serreta) – Benifallim - Port de Benifallim - La Torre de les Maçanes (Esmorzar) 42 km 950m Opcions Tornada 
+A) Port de La Carrasqueta – Alcoi (per Viaducte)– Cocentaina - Muro 
+B) Port de Benifallim
+C) Port del Collao – Relleu – Sella – Tudons – Alcoleja – Benasau – Benilloba – Cocentaina – Muro. 
+
+43.	TIBI - 95 Km ↑1500 m
+Recorregut: Muro – Cocentaina - Alcoi - Port de La Carrasqueta – Xixona – Tibi (Esmorzar) 48km ↑950m – Ibi – Revoltes - Montesol - Alcoi – Muro. (Opció tornada del rebolcat)
+
+44.	AIGUES DE BUSOT per Carrasqueta – 115 Km ↑2000 m
+Recorregut: Muro – Cocentaina - Alcoi – Barranc de la Batalla - Port de La Carrasqueta – Xixona – Busot - Aigues de Busot (Esmorzar) 58km ↑1000m  – Relleu - Tudons – Alcoleja – Benasau – Benilloba – Cocentaina – Muro 
+
+45.	AGOST – 115Km ↑1450m 
+Recorregut: Muro – Cocentaina – Alcoi – Ibi – Las Gemelas - Agost(Esmorzar) 57Km ↑660m – Las Gemelas – Ibi – Alcoi – Cocentaina - Muro
+
+46.	ONIL – 95 Km ↑1000 m
+Recorregut: Muro – Cocentaina – Alcoi – Ibi – Onil 40km ↑600m (Esmorzar) – Port de Biar – Biar – Banyeres – Bocairent – Alfafara - Agres – Muro
+
+47.	ONIL per Revoltes – 95 Km ↑1100 m
+Recorregut: Muro – Cocentaina – Alcoi – Ibi – Port d’Ibi (Revoltes) – Onil 45km↑700m (Esmorzar) – Port de Biar – Biar – Banyeres – Bocairent – Alfafara - Agres – Muro
+
+48.	ONIL pel Salt – 95 Km ↑1100 m
+Recorregut: Muro – Cocentaina – Alcoi – Salt – Font dels Patos – Revoltes - Ibi – Onil 45km ↑950m (Esmorzar) – Port de Biar – Biar – Banyeres – Bocairent – Alfafara - Agres – Muro.
+
+49.	ONIL per Banyeres – 102 Km ↑1250 m
+Recorregut: Muro – Agres – Alfafara – Bocairent – Banyeres de Mariola – Biar – Port de Biar – Onil (Esmorzar) 53Km 700m - Revoltes - Ibi – Barranc de la Batalla - Revolcat – Benilloba – Cocentaina – Muro.
+
+50.	LA FONT ROJA  - Font dels Patos  99 Km ↑1600 m
+Recorregut: Muro – Cocentaina – Port del Rebolcat – Port de la Font Roja – La Safranera – La Font dels Patos  (Esmorzar) 45Km ↑950m– Banyeres - Bocairent - Alfafara – Agres - Muro. 
+
+51.	LA FONT ROJA  - Venta Sant Jordi  100 Km ↑1700 m
+Recorregut: Muro – Cocentaina – Port del Rebolcat – Port de la Font Roja –  – Venta Sant Jordi (Esmorzar) 45Km ↑950m – Benifallim – Penàguila – Benasau – Gorga – Milleneta – Almudaina – Benialfaquí – Planes – Beniarrés - Gaianes  - Muro.
+Opcions tornada: 
+A)Benifallim – Penàguila - TUDONS  –  Benasau - Gorga  - Milleneta – Cocentaina - Muro.100Km ↑2000m
+B)Tornada pel Càmping Mariola.
+
+52.	ALCOI (Venta Sant Jordi)  –  100 Km  ↑1400 m
+Recorregut: Muro – Cocentaina – Alcoi – El Salt – Revoltes – Ibi – Venta Sant Jordi (Esmorzar) 45km ↑700 m – Benifallim – Penaguila – Benassau – Gorga – Milleneta – Almudaina – Benialfaquí – Planes – Beniarrés - Gaianes  - Muro.
+
