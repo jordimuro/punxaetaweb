@@ -91,56 +91,73 @@ function buildRouteProfilePreviewDataUri(gpxContent: string | null | undefined) 
 
 export default async function HomePage() {
   const todayKey = getTodayKey();
-  const nextRoute = (await getUpcomingRoutes(todayKey, 1))[0];
+  const upcomingRoutes = await getUpcomingRoutes(todayKey, 2);
+  const nextRoute = upcomingRoutes[0];
+  const secondRouteSameDay = upcomingRoutes[1] && upcomingRoutes[1].date === nextRoute?.date ? upcomingRoutes[1] : null;
+  const featuredRoutes = nextRoute
+    ? secondRouteSameDay
+      ? [nextRoute, secondRouteSameDay]
+      : [nextRoute]
+    : [];
   const latestPhotoPost = (await listPhotoPosts())[0];
   const latestTrofeuPost = (await listTrofeuEntrades())[0];
-  const nextRouteGpxContent = nextRoute ? await getRouteGpxContent(nextRoute) : null;
-  const nextRouteProfilePreview = buildRouteProfilePreviewDataUri(nextRouteGpxContent);
+  const routePreviewBySlug = new Map<string, string | null>();
+
+  for (const route of featuredRoutes) {
+    const gpxContent = await getRouteGpxContent(route);
+    routePreviewBySlug.set(route.slug, buildRouteProfilePreviewDataUri(gpxContent));
+  }
 
   return (
     <div className="page">
       <section className="section section--soft">
         <div className="container">
           <div className="home-summary-grid">
-            {nextRoute ? (
-              <Link className="home-summary-card home-summary-card--route" href={`/rutas/${nextRoute.slug}`}>
-                <div className="home-summary-card__top">
-                  <span className="pill">Pròxima ruta</span>
-                  <span className="pill pill--subtle">{buildDateLabel(nextRoute.date)}</span>
-                </div>
-                <h3>{nextRoute.name}</h3>
-                {nextRouteProfilePreview ? (
-                  <div className="home-summary-card__media home-summary-card__media--compact">
-                    <Image
-                      src={nextRouteProfilePreview}
-                      alt={`Perfil de ${nextRoute.name}`}
-                      fill
-                      sizes="(max-width: 980px) 100vw, 40vw"
-                      style={{ objectFit: "cover" }}
-                      unoptimized
-                    />
-                  </div>
-                ) : null}
-                <dl className="stats stats--compact">
-                  <div>
-                    <dt>Data</dt>
-                    <dd>{buildDateLabel(nextRoute.date)}</dd>
-                  </div>
-                  <div>
-                    <dt>Hora eixida</dt>
-                    <dd>{nextRoute.departureTimes.join(" / ")}</dd>
-                  </div>
-                  <div>
-                    <dt>Lloc d&apos;eixida</dt>
-                    <dd>{nextRoute.meetingPoint}</dd>
-                  </div>
-                  <div>
-                    <dt>Km totals</dt>
-                    <dd>{nextRoute.kms} km</dd>
-                  </div>
-                </dl>
-                <span className="home-summary-card__cta">Obrir ruta →</span>
-              </Link>
+            {featuredRoutes.length > 0 ? (
+              featuredRoutes.map((route) => {
+                const routeProfilePreview = routePreviewBySlug.get(route.slug);
+
+                return (
+                  <Link className="home-summary-card home-summary-card--route" href={`/rutas/${route.slug}`} key={route.slug}>
+                    <div className="home-summary-card__top">
+                      <span className="pill">Pròxima ruta</span>
+                      <span className="pill pill--subtle">{buildDateLabel(route.date)}</span>
+                    </div>
+                    <h3>{route.name}</h3>
+                    {routeProfilePreview ? (
+                      <div className="home-summary-card__media home-summary-card__media--compact">
+                        <Image
+                          src={routeProfilePreview}
+                          alt={`Perfil de ${route.name}`}
+                          fill
+                          sizes="(max-width: 980px) 100vw, 40vw"
+                          style={{ objectFit: "cover" }}
+                          unoptimized
+                        />
+                      </div>
+                    ) : null}
+                    <dl className="stats stats--compact">
+                      <div>
+                        <dt>Data</dt>
+                        <dd>{buildDateLabel(route.date)}</dd>
+                      </div>
+                      <div>
+                        <dt>Hora eixida</dt>
+                        <dd>{route.departureTimes.join(" / ")}</dd>
+                      </div>
+                      <div>
+                        <dt>Lloc d&apos;eixida</dt>
+                        <dd>{route.meetingPoint}</dd>
+                      </div>
+                      <div>
+                        <dt>Km totals</dt>
+                        <dd>{route.kms} km</dd>
+                      </div>
+                    </dl>
+                    <span className="home-summary-card__cta">Obrir ruta →</span>
+                  </Link>
+                );
+              })
             ) : (
               <div className="home-summary-card home-summary-card--route">
                 <span className="pill">Pròxima ruta</span>

@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AuthOnly } from "@/components/auth";
 import { GpxViewer } from "@/components/gpx-viewer";
-import { buildDateLabel, getRouteBySlug, getRouteGpxContent } from "@/lib/routes";
+import {
+  buildDateLabel,
+  getRouteBySlug,
+  getRouteGpxContent,
+  getRouteSecondaryGpxContent,
+} from "@/lib/routes";
 import { deleteRouteAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +24,29 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
     notFound();
   }
 
-  const gpxContent = await getRouteGpxContent(route);
+  const [gpxContent, secondaryGpxContent] = await Promise.all([
+    getRouteGpxContent(route),
+    getRouteSecondaryGpxContent(route),
+  ]);
+  const hasPrimaryGpx = Boolean(route.gpxFileName);
+  const hasSecondaryGpx = route.routeType === "cicloturista" && Boolean(route.gpxFileNameSecondary);
+  const hasAnyGpx = hasPrimaryGpx || hasSecondaryGpx;
+  const normalizeRouteName = (value: string | null | undefined) =>
+    (value ?? "").replace(/^nom\s+recorregut\s*[12]\s*:\s*/i, "").trim();
+  const primaryRouteName = normalizeRouteName(route.gpxRouteName) || "Recorregut 1";
+  const secondaryRouteName = normalizeRouteName(route.gpxRouteNameSecondary);
+  const hasSecondaryRouteInfo = Boolean(secondaryRouteName);
+  const officialUrl = (() => {
+    if (!route.externalUrl) {
+      return null;
+    }
+
+    try {
+      return new URL(route.externalUrl);
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div className="page">
@@ -81,22 +108,10 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
                   <dd>{route.elevationGain} m</dd>
                 </div>
                 {route.routeType === "cicloturista" ? (
-                  <>
-                    <div>
-                      <dt>Tipus</dt>
-                      <dd>Marcha Cicloturista</dd>
-                    </div>
-                    {route.externalUrl ? (
-                      <div>
-                        <dt>Web oficial</dt>
-                        <dd>
-                          <a href={route.externalUrl} target="_blank" rel="noreferrer">
-                            Obrir web de la marxa
-                          </a>
-                        </dd>
-                      </div>
-                    ) : null}
-                  </>
+                  <div>
+                    <dt>Tipus</dt>
+                    <dd>Marcha Cicloturista</dd>
+                  </div>
                 ) : (
                   <>
                     <div>
@@ -116,19 +131,110 @@ export default async function RouteDetailPage({ params }: RouteDetailProps) {
               </dl>
             </article>
 
-            <aside className="panel panel--accent">
-              <span className="panel__label">Recorregut</span>
-              <div className="notes">
-                <p>{route.notes}</p>
-              </div>
-            </aside>
+            {route.routeType === "cicloturista" ? (
+              <aside className="panel panel--accent">
+                <span className="panel__label">Web oficial</span>
+                <div className="route-official-card">
+                  <p className="route-official-card__title">Informació de la marxa</p>
+                  {officialUrl ? (
+                    <>
+                      <p className="route-official-card__host">{officialUrl.host}</p>
+                      <p className="route-official-card__path">{officialUrl.pathname || "/"}</p>
+                      <a
+                        className="button button--secondary button--small"
+                        href={route.externalUrl ?? undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Obrir web oficial
+                      </a>
+                    </>
+                  ) : (
+                    <p className="route-detail__empty">No hi ha una web oficial vàlida configurada.</p>
+                  )}
+                </div>
+                <div className="route-variant-stack">
+                  <div className="route-variant-card">
+                    <p className="route-variant-card__title">{primaryRouteName}</p>
+                    <dl className="stats stats--stacked">
+                      <div>
+                        <dt>Punt eixida</dt>
+                        <dd>{route.meetingPoint}</dd>
+                      </div>
+                      <div>
+                        <dt>Hora eixida</dt>
+                        <dd>{route.departureTimes[0] ?? "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>Kms</dt>
+                        <dd>{route.kms} km</dd>
+                      </div>
+                      <div>
+                        <dt>Desnivell</dt>
+                        <dd>{route.elevationGain} m</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {hasSecondaryRouteInfo ? (
+                    <div className="route-variant-card">
+                      <p className="route-variant-card__title">{secondaryRouteName}</p>
+                      <dl className="stats stats--stacked">
+                        <div>
+                          <dt>Punt eixida</dt>
+                          <dd>{route.meetingPointSecondary ?? "-"}</dd>
+                        </div>
+                        <div>
+                          <dt>Hora eixida</dt>
+                          <dd>{route.departureTimeSecondary ?? "-"}</dd>
+                        </div>
+                        <div>
+                          <dt>Kms</dt>
+                          <dd>{route.kmsSecondary !== null ? `${route.kmsSecondary} km` : "-"}</dd>
+                        </div>
+                        <div>
+                          <dt>Desnivell</dt>
+                          <dd>{route.elevationGainSecondary !== null ? `${route.elevationGainSecondary} m` : "-"}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  ) : null}
+                </div>
+              </aside>
+            ) : (
+              <aside className="panel panel--accent">
+                <span className="panel__label">Recorregut</span>
+                <div className="notes">
+                  <p>{route.notes}</p>
+                </div>
+              </aside>
+            )}
           </div>
 
           <section className="panel route-detail__gpx">
-            <span className="panel__label">Mapa i perfil</span>
-            <h2>Mapa i perfil</h2>
-            {route.gpxFileName ? (
-              <GpxViewer gpxContent={gpxContent} gpxFileName={route.gpxFileName} />
+            <span className="panel__label">{route.routeType === "cicloturista" ? "Recorreguts" : "Mapa i perfil"}</span>
+            <h2>{route.routeType === "cicloturista" ? "Recorreguts i perfils" : "Mapa i perfil"}</h2>
+            {hasAnyGpx ? (
+              <div className="route-detail__gpx-list">
+                {hasPrimaryGpx ? (
+                  <div className="route-gpx-block">
+                    <h3 className="route-gpx-block__title">{primaryRouteName}</h3>
+                    <GpxViewer
+                      gpxContent={gpxContent}
+                      gpxFileName={route.gpxFileName}
+                    />
+                  </div>
+                ) : null}
+                {hasSecondaryGpx ? (
+                  <div className="route-gpx-block">
+                    <h3 className="route-gpx-block__title">{secondaryRouteName || "Recorregut 2"}</h3>
+                    <GpxViewer
+                      gpxContent={secondaryGpxContent}
+                      gpxFileName={route.gpxFileNameSecondary}
+                    />
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <p className="route-detail__empty">Encara no hi ha un recorregut amb mapa i perfil.</p>
             )}

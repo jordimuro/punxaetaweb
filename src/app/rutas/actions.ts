@@ -27,6 +27,7 @@ export async function saveRouteAction(
 ): Promise<RouteFormState> {
   const parsed = parseRouteFormData(formData);
   const gpxFile = formData.get("gpxFile");
+  const gpxFileSecondary = formData.get("gpxFileSecondary");
 
   if (Object.keys(parsed.errors).length > 0) {
     return parsed;
@@ -40,7 +41,10 @@ export async function saveRouteAction(
       : await createRoute(parsed.values);
 
     if (gpxFile instanceof File && gpxFile.size > 0) {
-      await saveRouteGpx(route.slug, gpxFile);
+      await saveRouteGpx(route.slug, gpxFile, "primary");
+    }
+    if (route.routeType === "cicloturista" && gpxFileSecondary instanceof File && gpxFileSecondary.size > 0) {
+      await saveRouteGpx(route.slug, gpxFileSecondary, "secondary");
     }
   } catch (error) {
     if (

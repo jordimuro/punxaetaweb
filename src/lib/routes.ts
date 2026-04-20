@@ -22,9 +22,18 @@ export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationT
   externalUrl: string | null;
   distanceToBreakfast: number;
   elevationToBreakfast: number;
+  meetingPointSecondary: string | null;
+  departureTimeSecondary: string | null;
+  kmsSecondary: number | null;
+  elevationGainSecondary: number | null;
+  gpxRouteName: string | null;
   gpxFileName: string | null;
   gpxPath: string | null;
   gpxContent: string | null;
+  gpxRouteNameSecondary: string | null;
+  gpxFileNameSecondary: string | null;
+  gpxPathSecondary: string | null;
+  gpxContentSecondary: string | null;
 };
 
 export type RouteFormValues = {
@@ -44,11 +53,20 @@ export type RouteFormValues = {
   town: string;
   summary: string;
   meetingPoint: string;
+  meetingPointSecondary: string;
   notes: string;
   externalUrl: string;
+  gpxRouteName: string;
   gpxFileName: string;
   gpxPath: string;
   gpxContent: string;
+  departureTimeSecondary: string;
+  kmsSecondary: string;
+  elevationGainSecondary: string;
+  gpxRouteNameSecondary: string;
+  gpxFileNameSecondary: string;
+  gpxPathSecondary: string;
+  gpxContentSecondary: string;
 };
 
 export type RouteFormState = {
@@ -73,11 +91,20 @@ type RouteRow = {
   town: string;
   summary: string;
   meetingPoint: string;
+  meetingPointSecondary: string | null;
   notes: string;
   externalUrl: string | null;
+  gpxRouteName: string | null;
   gpxFileName: string | null;
   gpxPath: string | null;
   gpxContent: string | null;
+  departureTimeSecondary: string | null;
+  kmsSecondary: number | null;
+  elevationGainSecondary: number | null;
+  gpxRouteNameSecondary: string | null;
+  gpxFileNameSecondary: string | null;
+  gpxPathSecondary: string | null;
+  gpxContentSecondary: string | null;
 };
 
 const createTableStatement = db.prepare(`
@@ -97,11 +124,20 @@ const createTableStatement = db.prepare(`
     town TEXT NOT NULL,
     summary TEXT NOT NULL,
     meetingPoint TEXT NOT NULL,
+    meetingPointSecondary TEXT,
     notes TEXT NOT NULL,
     externalUrl TEXT,
+    gpxRouteName TEXT,
     gpxFileName TEXT,
     gpxPath TEXT,
     gpxContent TEXT,
+    departureTimeSecondary TEXT,
+    kmsSecondary INTEGER,
+    elevationGainSecondary INTEGER,
+    gpxRouteNameSecondary TEXT,
+    gpxFileNameSecondary TEXT,
+    gpxPathSecondary TEXT,
+    gpxContentSecondary TEXT,
     createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
@@ -121,32 +157,40 @@ function ensureColumn(name: string, definition: string) {
 ensureSchema();
 
 const listRoutesStatement = db.prepare(
-  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent FROM routes ORDER BY date ASC, name ASC",
+  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes ORDER BY date ASC, name ASC",
 );
 const countRoutesStatement = db.prepare("SELECT COUNT(*) as count FROM routes");
 const findRouteStatement = db.prepare(
-  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent FROM routes WHERE slug = ? LIMIT 1",
+  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes WHERE slug = ? LIMIT 1",
 );
 const insertRouteStatement = db.prepare(`
   INSERT INTO routes (
     id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
-    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent
+    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, departureTimeSecondary,
+    kmsSecondary, elevationGainSecondary,
+    summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent,
+    gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary
   ) VALUES (
     @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
-    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @externalUrl, @gpxFileName, @gpxPath, @gpxContent
+    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town, @departureTimeSecondary,
+    @kmsSecondary, @elevationGainSecondary,
+    @summary, @meetingPoint, @meetingPointSecondary, @notes, @externalUrl, @gpxRouteName, @gpxFileName, @gpxPath, @gpxContent,
+    @gpxRouteNameSecondary, @gpxFileNameSecondary, @gpxPathSecondary, @gpxContentSecondary
   )
 `);
 const seedInsertRouteStatement = db.prepare(`
   INSERT OR IGNORE INTO routes (
     id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
-    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town,
-    summary, meetingPoint, notes, externalUrl, gpxFileName, gpxPath, gpxContent
+    distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, departureTimeSecondary,
+    kmsSecondary, elevationGainSecondary,
+    summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent,
+    gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary
   ) VALUES (
     @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
-    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town,
-    @summary, @meetingPoint, @notes, @externalUrl, @gpxFileName, @gpxPath, @gpxContent
+    @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town, @departureTimeSecondary,
+    @kmsSecondary, @elevationGainSecondary,
+    @summary, @meetingPoint, @meetingPointSecondary, @notes, @externalUrl, @gpxRouteName, @gpxFileName, @gpxPath, @gpxContent,
+    @gpxRouteNameSecondary, @gpxFileNameSecondary, @gpxPathSecondary, @gpxContentSecondary
   )
 `);
 const updateRouteStatement = db.prepare(`
@@ -162,14 +206,23 @@ const updateRouteStatement = db.prepare(`
     elevationToBreakfast = @elevationToBreakfast,
     kms = @kms,
     elevationGain = @elevationGain,
+    departureTimeSecondary = @departureTimeSecondary,
+    kmsSecondary = @kmsSecondary,
+    elevationGainSecondary = @elevationGainSecondary,
     town = @town,
     summary = @summary,
     meetingPoint = @meetingPoint,
+    meetingPointSecondary = @meetingPointSecondary,
     notes = @notes,
     externalUrl = @externalUrl,
+    gpxRouteName = @gpxRouteName,
     gpxFileName = @gpxFileName,
     gpxPath = @gpxPath,
     gpxContent = @gpxContent,
+    gpxRouteNameSecondary = @gpxRouteNameSecondary,
+    gpxFileNameSecondary = @gpxFileNameSecondary,
+    gpxPathSecondary = @gpxPathSecondary,
+    gpxContentSecondary = @gpxContentSecondary,
     updatedAt = CURRENT_TIMESTAMP
   WHERE id = @id
 `);
@@ -185,10 +238,19 @@ function ensureSchema() {
   ensureColumn("routeType", "routeType TEXT NOT NULL DEFAULT 'ruta'");
   ensureColumn("distanceToBreakfast", "distanceToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("elevationToBreakfast", "elevationToBreakfast INTEGER NOT NULL DEFAULT 0");
+  ensureColumn("meetingPointSecondary", "meetingPointSecondary TEXT");
+  ensureColumn("departureTimeSecondary", "departureTimeSecondary TEXT");
+  ensureColumn("kmsSecondary", "kmsSecondary INTEGER");
+  ensureColumn("elevationGainSecondary", "elevationGainSecondary INTEGER");
   ensureColumn("externalUrl", "externalUrl TEXT");
+  ensureColumn("gpxRouteName", "gpxRouteName TEXT");
   ensureColumn("gpxFileName", "gpxFileName TEXT");
   ensureColumn("gpxPath", "gpxPath TEXT");
   ensureColumn("gpxContent", "gpxContent TEXT");
+  ensureColumn("gpxRouteNameSecondary", "gpxRouteNameSecondary TEXT");
+  ensureColumn("gpxFileNameSecondary", "gpxFileNameSecondary TEXT");
+  ensureColumn("gpxPathSecondary", "gpxPathSecondary TEXT");
+  ensureColumn("gpxContentSecondary", "gpxContentSecondary TEXT");
 }
 
 const gpxUploadDir = resolveMediaUploadDir("gpx");
@@ -248,11 +310,20 @@ function seedRoutesIfNeeded() {
       town: route.town,
       summary: route.summary,
       meetingPoint: route.meetingPoint,
+      meetingPointSecondary: null,
       notes: route.notes,
       externalUrl: route.externalUrl ?? null,
+      gpxRouteName: null,
       gpxFileName: route.gpxFileName ?? null,
       gpxPath: route.gpxPath ?? null,
       gpxContent: route.gpxContent ?? null,
+      departureTimeSecondary: null,
+      kmsSecondary: null,
+      elevationGainSecondary: null,
+      gpxRouteNameSecondary: null,
+      gpxFileNameSecondary: null,
+      gpxPathSecondary: null,
+      gpxContentSecondary: null,
     })),
   );
 }
@@ -277,11 +348,20 @@ function toRouteRecord(route: RouteRow): RouteRecord {
     town: route.town,
     summary: route.summary,
     meetingPoint: route.meetingPoint,
+    meetingPointSecondary: route.meetingPointSecondary,
     notes: route.notes,
     externalUrl: route.externalUrl,
+    gpxRouteName: route.gpxRouteName,
     gpxFileName: route.gpxFileName,
     gpxPath: route.gpxPath,
     gpxContent: route.gpxContent,
+    departureTimeSecondary: route.departureTimeSecondary,
+    kmsSecondary: route.kmsSecondary,
+    elevationGainSecondary: route.elevationGainSecondary,
+    gpxRouteNameSecondary: route.gpxRouteNameSecondary,
+    gpxFileNameSecondary: route.gpxFileNameSecondary,
+    gpxPathSecondary: route.gpxPathSecondary,
+    gpxContentSecondary: route.gpxContentSecondary,
   };
 }
 
@@ -314,11 +394,20 @@ export const emptyRouteValues = (): RouteFormValues => ({
   town: "",
   summary: "",
   meetingPoint: "",
+  meetingPointSecondary: "",
   notes: "",
   externalUrl: "",
+  gpxRouteName: "",
   gpxFileName: "",
   gpxPath: "",
   gpxContent: "",
+  departureTimeSecondary: "",
+  kmsSecondary: "",
+  elevationGainSecondary: "",
+  gpxRouteNameSecondary: "",
+  gpxFileNameSecondary: "",
+  gpxPathSecondary: "",
+  gpxContentSecondary: "",
 });
 
 export async function listRoutes() {
@@ -369,7 +458,10 @@ function buildRouteErrors(values: RouteFormValues) {
   if (!values.elevationGain.trim()) errors.elevationGain = "Cal indicar el desnivell.";
   if (!values.town.trim()) errors.town = "Cal indicar la població.";
   if (!values.meetingPoint.trim()) errors.meetingPoint = "Cal un punt de trobada.";
-  if (!values.notes.trim()) errors.notes = "Cal un recorregut.";
+  if (!isCicloturista && !values.notes.trim()) errors.notes = "Cal un recorregut.";
+  if (!values.gpxRouteName.trim()) {
+    errors.gpxRouteName = "Cal indicar un nom per al recorregut principal.";
+  }
   if (!isCicloturista && !values.breakfastPlace.trim()) {
     errors.breakfastPlace = "Cal un lloc d'esmorzar.";
   }
@@ -392,6 +484,21 @@ function buildRouteErrors(values: RouteFormValues) {
         errors.externalUrl = "La web de la marxa no és vàlida.";
       }
     }
+    const hasSecondaryName = values.gpxRouteNameSecondary.trim().length > 0;
+    if (hasSecondaryName) {
+      if (!values.meetingPointSecondary.trim()) {
+        errors.meetingPointSecondary = "Cal indicar un punt d'eixida del segon recorregut.";
+      }
+      if (!values.departureTimeSecondary.trim()) {
+        errors.departureTimeSecondary = "Cal indicar una hora d'eixida del segon recorregut.";
+      }
+      if (!values.kmsSecondary.trim()) {
+        errors.kmsSecondary = "Cal indicar els quilòmetres del segon recorregut.";
+      }
+      if (!values.elevationGainSecondary.trim()) {
+        errors.elevationGainSecondary = "Cal indicar el desnivell del segon recorregut.";
+      }
+    }
   }
 
   return errors;
@@ -404,6 +511,10 @@ function buildRouteSummary(notes: string) {
   }
 
   return normalized.length > 180 ? `${normalized.slice(0, 177).trimEnd()}...` : normalized;
+}
+
+function normalizeRouteName(value: string) {
+  return value.replace(/^nom\s+recorregut\s*[12]\s*:\s*/i, "").trim();
 }
 
 export function routeToFormValues(route: RouteRecord): RouteFormValues {
@@ -424,11 +535,21 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     town: route.town,
     summary: route.summary,
     meetingPoint: route.meetingPoint,
+    meetingPointSecondary: route.meetingPointSecondary ?? "",
     notes: route.notes,
     externalUrl: route.externalUrl ?? "",
+    gpxRouteName: route.gpxRouteName ?? "",
     gpxFileName: route.gpxFileName ?? "",
     gpxPath: route.gpxPath ?? "",
     gpxContent: route.gpxContent ?? "",
+    departureTimeSecondary: route.departureTimeSecondary ?? "",
+    kmsSecondary: route.kmsSecondary !== null ? String(route.kmsSecondary) : "",
+    elevationGainSecondary:
+      route.elevationGainSecondary !== null ? String(route.elevationGainSecondary) : "",
+    gpxRouteNameSecondary: route.gpxRouteNameSecondary ?? "",
+    gpxFileNameSecondary: route.gpxFileNameSecondary ?? "",
+    gpxPathSecondary: route.gpxPathSecondary ?? "",
+    gpxContentSecondary: route.gpxContentSecondary ?? "",
   };
 }
 
@@ -474,10 +595,15 @@ export async function buildDuplicateRouteValues(slug: string) {
 export function parseRouteFormData(formData: FormData): RouteFormState {
   const notes = String(formData.get("notes") ?? "").trim();
   const gpxContent = String(formData.get("gpxContent") ?? "");
+  const gpxContentSecondary = String(formData.get("gpxContentSecondary") ?? "");
+  const isCicloturista =
+    String(formData.get("routeType") ?? "ruta").trim() === "cicloturista";
+  const gpxRouteName = normalizeRouteName(String(formData.get("gpxRouteName") ?? "").trim());
+  const gpxRouteNameSecondary = normalizeRouteName(String(formData.get("gpxRouteNameSecondary") ?? "").trim());
   const values: RouteFormValues = {
     id: String(formData.get("id") ?? ""),
     originalSlug: String(formData.get("originalSlug") ?? ""),
-    routeType: String(formData.get("routeType") ?? "ruta").trim() === "cicloturista" ? "cicloturista" : "ruta",
+    routeType: isCicloturista ? "cicloturista" : "ruta",
     slug: String(formData.get("slug") ?? "").trim(),
     name: String(formData.get("name") ?? "").trim(),
     date: String(formData.get("date") ?? ""),
@@ -491,11 +617,20 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     town: String(formData.get("town") ?? "").trim(),
     summary: buildRouteSummary(notes),
     meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
+    meetingPointSecondary: String(formData.get("meetingPointSecondary") ?? "").trim(),
     notes,
     externalUrl: String(formData.get("externalUrl") ?? "").trim(),
+    gpxRouteName: gpxRouteName || (isCicloturista ? "Recorregut 1" : "Recorregut principal"),
     gpxFileName: String(formData.get("gpxFileName") ?? "").trim(),
     gpxPath: String(formData.get("gpxPath") ?? "").trim(),
     gpxContent,
+    departureTimeSecondary: String(formData.get("departureTimeSecondary") ?? "").trim(),
+    kmsSecondary: String(formData.get("kmsSecondary") ?? "").trim(),
+    elevationGainSecondary: String(formData.get("elevationGainSecondary") ?? "").trim(),
+    gpxRouteNameSecondary: isCicloturista ? gpxRouteNameSecondary : "",
+    gpxFileNameSecondary: String(formData.get("gpxFileNameSecondary") ?? "").trim(),
+    gpxPathSecondary: String(formData.get("gpxPathSecondary") ?? "").trim(),
+    gpxContentSecondary,
   };
 
   const errors = buildRouteErrors(values);
@@ -509,6 +644,7 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
 export async function createRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
   const isCicloturista = values.routeType === "cicloturista";
+  const hasSecondaryVariant = isCicloturista && values.gpxRouteNameSecondary.trim().length > 0;
   const row: RouteRow = {
     id: randomUUID(),
     routeType: values.routeType,
@@ -524,11 +660,20 @@ export async function createRoute(values: RouteFormValues) {
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
+    meetingPointSecondary: hasSecondaryVariant ? values.meetingPointSecondary : null,
     notes: values.notes,
     externalUrl: isCicloturista ? values.externalUrl : null,
+    gpxRouteName: values.gpxRouteName || null,
     gpxFileName: values.gpxFileName || null,
     gpxPath: values.gpxPath || null,
     gpxContent: values.gpxContent || null,
+    departureTimeSecondary: hasSecondaryVariant ? values.departureTimeSecondary : null,
+    kmsSecondary: hasSecondaryVariant ? Number(values.kmsSecondary) : null,
+    elevationGainSecondary: hasSecondaryVariant ? Number(values.elevationGainSecondary) : null,
+    gpxRouteNameSecondary: hasSecondaryVariant ? values.gpxRouteNameSecondary || null : null,
+    gpxFileNameSecondary: hasSecondaryVariant ? values.gpxFileNameSecondary || null : null,
+    gpxPathSecondary: hasSecondaryVariant ? values.gpxPathSecondary || null : null,
+    gpxContentSecondary: hasSecondaryVariant ? values.gpxContentSecondary || null : null,
   };
 
   insertRouteStatement.run(row);
@@ -538,10 +683,25 @@ export async function createRoute(values: RouteFormValues) {
 export async function updateRoute(values: RouteFormValues) {
   seedRoutesIfNeeded();
   const isCicloturista = values.routeType === "cicloturista";
+  const hasSecondaryVariant = isCicloturista && values.gpxRouteNameSecondary.trim().length > 0;
   const existing = values.id
       ? (db.prepare(
-        "SELECT gpxFileName, gpxPath, gpxContent FROM routes WHERE id = ? LIMIT 1",
-      ).get(values.id) as Pick<RouteRow, "gpxFileName" | "gpxPath" | "gpxContent"> | undefined)
+        "SELECT gpxRouteName, gpxFileName, gpxPath, gpxContent, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary, meetingPointSecondary, departureTimeSecondary, kmsSecondary, elevationGainSecondary FROM routes WHERE id = ? LIMIT 1",
+      ).get(values.id) as Pick<
+        RouteRow,
+        | "gpxRouteName"
+        | "gpxFileName"
+        | "gpxPath"
+        | "gpxContent"
+        | "gpxRouteNameSecondary"
+        | "gpxFileNameSecondary"
+        | "gpxPathSecondary"
+        | "gpxContentSecondary"
+        | "meetingPointSecondary"
+        | "departureTimeSecondary"
+        | "kmsSecondary"
+        | "elevationGainSecondary"
+      > | undefined)
     : undefined;
   const row: RouteRow = {
     id: values.id,
@@ -558,11 +718,34 @@ export async function updateRoute(values: RouteFormValues) {
     town: values.town,
     summary: values.summary,
     meetingPoint: values.meetingPoint,
+    meetingPointSecondary: hasSecondaryVariant
+      ? values.meetingPointSecondary || existing?.meetingPointSecondary || null
+      : null,
     notes: values.notes,
     externalUrl: isCicloturista ? values.externalUrl : null,
+    gpxRouteName: values.gpxRouteName || existing?.gpxRouteName || null,
     gpxFileName: existing?.gpxFileName ?? null,
     gpxPath: existing?.gpxPath ?? null,
     gpxContent: existing?.gpxContent ?? null,
+    departureTimeSecondary: hasSecondaryVariant
+      ? values.departureTimeSecondary || existing?.departureTimeSecondary || null
+      : null,
+    kmsSecondary: hasSecondaryVariant
+      ? values.kmsSecondary
+        ? Number(values.kmsSecondary)
+        : existing?.kmsSecondary ?? null
+      : null,
+    elevationGainSecondary: hasSecondaryVariant
+      ? values.elevationGainSecondary
+        ? Number(values.elevationGainSecondary)
+        : existing?.elevationGainSecondary ?? null
+      : null,
+    gpxRouteNameSecondary: hasSecondaryVariant
+      ? values.gpxRouteNameSecondary || existing?.gpxRouteNameSecondary || null
+      : null,
+    gpxFileNameSecondary: hasSecondaryVariant ? existing?.gpxFileNameSecondary ?? null : null,
+    gpxPathSecondary: hasSecondaryVariant ? existing?.gpxPathSecondary ?? null : null,
+    gpxContentSecondary: hasSecondaryVariant ? existing?.gpxContentSecondary ?? null : null,
   };
 
   updateRouteStatement.run(row);
@@ -577,16 +760,20 @@ export async function deleteRoute(slug: string) {
   }
 
   const previousGpxAbsolutePath = resolveAbsoluteGpxPath(existing.gpxPath);
+  const previousGpxAbsolutePathSecondary = resolveAbsoluteGpxPath(existing.gpxPathSecondary);
   db.prepare("DELETE FROM routes WHERE slug = ?").run(slug);
 
   if (previousGpxAbsolutePath) {
     await unlink(previousGpxAbsolutePath).catch(() => undefined);
   }
+  if (previousGpxAbsolutePathSecondary) {
+    await unlink(previousGpxAbsolutePathSecondary).catch(() => undefined);
+  }
 
   return toRouteRecord(existing);
 }
 
-export async function saveRouteGpx(slug: string, file: File) {
+export async function saveRouteGpx(slug: string, file: File, slot: "primary" | "secondary" = "primary") {
   seedRoutesIfNeeded();
   const existing = findRouteStatement.get(slug) as RouteRow | undefined;
 
@@ -599,21 +786,36 @@ export async function saveRouteGpx(slug: string, file: File) {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   await writeFile(nextGpxTarget.absolutePath, fileBuffer);
 
-  const previousGpxAbsolutePath = resolveAbsoluteGpxPath(existing.gpxPath);
-  const updateGpxStatement = db.prepare(`
-    UPDATE routes SET
-      gpxFileName = @gpxFileName,
-      gpxPath = @gpxPath,
-      gpxContent = NULL,
-      updatedAt = CURRENT_TIMESTAMP
-    WHERE slug = @slug
-  `);
-
-  updateGpxStatement.run({
-    slug,
-    gpxFileName: file.name,
-    gpxPath: nextGpxTarget.publicPath,
-  });
+  const previousGpxAbsolutePath = resolveAbsoluteGpxPath(
+    slot === "secondary" ? existing.gpxPathSecondary : existing.gpxPath,
+  );
+  if (slot === "secondary") {
+    db.prepare(`
+      UPDATE routes SET
+        gpxFileNameSecondary = @gpxFileName,
+        gpxPathSecondary = @gpxPath,
+        gpxContentSecondary = NULL,
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE slug = @slug
+    `).run({
+      slug,
+      gpxFileName: file.name,
+      gpxPath: nextGpxTarget.publicPath,
+    });
+  } else {
+    db.prepare(`
+      UPDATE routes SET
+        gpxFileName = @gpxFileName,
+        gpxPath = @gpxPath,
+        gpxContent = NULL,
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE slug = @slug
+    `).run({
+      slug,
+      gpxFileName: file.name,
+      gpxPath: nextGpxTarget.publicPath,
+    });
+  }
 
   if (previousGpxAbsolutePath) {
     await unlink(previousGpxAbsolutePath).catch(() => undefined);
@@ -621,9 +823,17 @@ export async function saveRouteGpx(slug: string, file: File) {
 
   return toRouteRecord({
     ...existing,
-    gpxFileName: file.name,
-    gpxPath: nextGpxTarget.publicPath,
-    gpxContent: null,
+    ...(slot === "secondary"
+      ? {
+          gpxFileNameSecondary: file.name,
+          gpxPathSecondary: nextGpxTarget.publicPath,
+          gpxContentSecondary: null,
+        }
+      : {
+          gpxFileName: file.name,
+          gpxPath: nextGpxTarget.publicPath,
+          gpxContent: null,
+        }),
   });
 }
 
@@ -638,6 +848,22 @@ export async function getRouteGpxContent(route: { gpxPath?: string | null; gpxCo
   }
 
   return route.gpxContent ?? null;
+}
+
+export async function getRouteSecondaryGpxContent(route: {
+  gpxPathSecondary?: string | null;
+  gpxContentSecondary?: string | null;
+}) {
+  const absolutePath = resolveAbsoluteGpxPath(route.gpxPathSecondary);
+  if (absolutePath) {
+    try {
+      return await readFile(absolutePath, "utf8");
+    } catch {
+      return route.gpxContentSecondary ?? null;
+    }
+  }
+
+  return route.gpxContentSecondary ?? null;
 }
 
 export function buildDateLabel(date: string) {

@@ -66,6 +66,9 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
           <input type="hidden" name="gpxFileName" defaultValue={state.values.gpxFileName} />
           <input type="hidden" name="gpxPath" defaultValue={state.values.gpxPath} />
           <textarea hidden readOnly name="gpxContent" value={state.values.gpxContent} />
+          <input type="hidden" name="gpxFileNameSecondary" defaultValue={state.values.gpxFileNameSecondary} />
+          <input type="hidden" name="gpxPathSecondary" defaultValue={state.values.gpxPathSecondary} />
+          <textarea hidden readOnly name="gpxContentSecondary" value={state.values.gpxContentSecondary} />
 
           {state.formError ? <p className="form__alert">{state.formError}</p> : null}
 
@@ -177,62 +180,178 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
               </>
             )}
 
-            <label className="field">
-              <span>Punt d&apos;eixida</span>
-              <input
-                name="meetingPoint"
-                defaultValue={state.values.meetingPoint}
-                placeholder="Punt d'eixida"
-              />
-              <FieldError message={state.errors.meetingPoint} />
-            </label>
+            {isCicloturista ? (
+              <>
+                <label className="field field--full">
+                  <span>Nom recorregut 1</span>
+                  <input
+                    name="gpxRouteName"
+                    defaultValue={state.values.gpxRouteName || "Recorregut 1"}
+                    placeholder="Recorregut 1"
+                  />
+                  <FieldError message={state.errors.gpxRouteName} />
+                </label>
 
-            <label className="field">
-              <span>Hora d&apos;eixida</span>
-              <input name="departureTimeOne" defaultValue={state.values.departureTimeOne} placeholder="08:00" />
-              <FieldError message={state.errors.departureTimeOne} />
-            </label>
+                <label className="field">
+                  <span>Punt d&apos;eixida recorregut 1</span>
+                  <input
+                    name="meetingPoint"
+                    defaultValue={state.values.meetingPoint}
+                    placeholder="Punt d'eixida recorregut 1"
+                  />
+                  <FieldError message={state.errors.meetingPoint} />
+                </label>
 
-            {!isCicloturista ? (
-              <label className="field">
-                <span>Eixida 2</span>
-                <input name="departureTimeTwo" defaultValue={state.values.departureTimeTwo} placeholder="08:30" />
-              </label>
+                <label className="field">
+                  <span>Hora d&apos;eixida recorregut 1</span>
+                  <input name="departureTimeOne" defaultValue={state.values.departureTimeOne} placeholder="08:00" />
+                  <FieldError message={state.errors.departureTimeOne} />
+                </label>
+
+                <label className="field">
+                  <span>Kms recorregut 1</span>
+                  <input type="number" name="kms" defaultValue={state.values.kms} min="0" step="1" />
+                  <FieldError message={state.errors.kms} />
+                </label>
+
+                <label className="field">
+                  <span>Desnivell recorregut 1</span>
+                  <input
+                    type="number"
+                    name="elevationGain"
+                    defaultValue={state.values.elevationGain}
+                    min="0"
+                    step="1"
+                  />
+                  <FieldError message={state.errors.elevationGain} />
+                </label>
+
+                <label className="field field--full">
+                  <span>Nom recorregut 2</span>
+                  <input
+                    name="gpxRouteNameSecondary"
+                    defaultValue={state.values.gpxRouteNameSecondary}
+                    placeholder="Opcional"
+                  />
+                  <FieldError message={state.errors.gpxRouteNameSecondary} />
+                </label>
+
+                <label className="field">
+                  <span>Punt d&apos;eixida recorregut 2</span>
+                  <input
+                    name="meetingPointSecondary"
+                    defaultValue={state.values.meetingPointSecondary}
+                    placeholder="Punt d'eixida recorregut 2"
+                  />
+                  <FieldError message={state.errors.meetingPointSecondary} />
+                </label>
+
+                <label className="field">
+                  <span>Hora d&apos;eixida recorregut 2</span>
+                  <input
+                    name="departureTimeSecondary"
+                    defaultValue={state.values.departureTimeSecondary}
+                    placeholder="08:15"
+                  />
+                  <FieldError message={state.errors.departureTimeSecondary} />
+                </label>
+
+                <label className="field">
+                  <span>Kms recorregut 2</span>
+                  <input type="number" name="kmsSecondary" defaultValue={state.values.kmsSecondary} min="0" step="1" />
+                  <FieldError message={state.errors.kmsSecondary} />
+                </label>
+
+                <label className="field">
+                  <span>Desnivell recorregut 2</span>
+                  <input
+                    type="number"
+                    name="elevationGainSecondary"
+                    defaultValue={state.values.elevationGainSecondary}
+                    min="0"
+                    step="1"
+                  />
+                  <FieldError message={state.errors.elevationGainSecondary} />
+                </label>
+
+                <input type="hidden" name="departureTimeTwo" value="" />
+              </>
             ) : (
-              <input type="hidden" name="departureTimeTwo" value="" />
+              <>
+                <label className="field">
+                  <span>Punt d&apos;eixida</span>
+                  <input
+                    name="meetingPoint"
+                    defaultValue={state.values.meetingPoint}
+                    placeholder="Punt d'eixida"
+                  />
+                  <FieldError message={state.errors.meetingPoint} />
+                </label>
+
+                <label className="field">
+                  <span>Hora d&apos;eixida</span>
+                  <input name="departureTimeOne" defaultValue={state.values.departureTimeOne} placeholder="08:00" />
+                  <FieldError message={state.errors.departureTimeOne} />
+                </label>
+
+                <label className="field">
+                  <span>Eixida 2</span>
+                  <input name="departureTimeTwo" defaultValue={state.values.departureTimeTwo} placeholder="08:30" />
+                </label>
+
+                <label className="field">
+                  <span>Kms</span>
+                  <input type="number" name="kms" defaultValue={state.values.kms} min="0" step="1" />
+                  <FieldError message={state.errors.kms} />
+                </label>
+
+                <label className="field">
+                  <span>Desnivell total</span>
+                  <input
+                    type="number"
+                    name="elevationGain"
+                    defaultValue={state.values.elevationGain}
+                    min="0"
+                    step="1"
+                  />
+                  <FieldError message={state.errors.elevationGain} />
+                </label>
+
+                <input type="hidden" name="meetingPointSecondary" value="" />
+                <input type="hidden" name="departureTimeSecondary" value="" />
+                <input type="hidden" name="kmsSecondary" value="" />
+                <input type="hidden" name="elevationGainSecondary" value="" />
+                <input type="hidden" name="gpxRouteNameSecondary" value="" />
+
+                <label className="field field--full">
+                  <span>Nom recorregut 1</span>
+                  <input
+                    name="gpxRouteName"
+                    defaultValue={state.values.gpxRouteName || "Recorregut principal"}
+                    placeholder="Recorregut principal"
+                  />
+                  <FieldError message={state.errors.gpxRouteName} />
+                </label>
+              </>
             )}
 
-            <label className="field">
-              <span>Kms</span>
-              <input type="number" name="kms" defaultValue={state.values.kms} min="0" step="1" />
-              <FieldError message={state.errors.kms} />
-            </label>
+            {isCicloturista ? (
+              <input type="hidden" name="notes" value={state.values.notes} />
+            ) : (
+              <label className="field field--full">
+                <span>Descripció</span>
+                <textarea
+                  name="notes"
+                  defaultValue={state.values.notes}
+                  rows={5}
+                  placeholder="Itinerari, variants, observacions..."
+                />
+                <FieldError message={state.errors.notes} />
+              </label>
+            )}
 
-            <label className="field">
-              <span>Desnivell total</span>
-              <input
-                type="number"
-                name="elevationGain"
-                defaultValue={state.values.elevationGain}
-                min="0"
-                step="1"
-              />
-              <FieldError message={state.errors.elevationGain} />
-            </label>
-
-            <label className="field field--full">
-              <span>Recorregut</span>
-              <textarea
-                name="notes"
-                defaultValue={state.values.notes}
-                rows={5}
-                placeholder="Itinerari, variants, observacions..."
-              />
-              <FieldError message={state.errors.notes} />
-            </label>
-
-            <label className="field field--full">
-              <span>Fitxer GPX (opcional)</span>
+            <label className={isCicloturista ? "field" : "field field--full"}>
+              <span>{isCicloturista ? "GPX recorregut 1 (opcional)" : "Fitxer GPX (opcional)"}</span>
               <input
                 type="file"
                 name="gpxFile"
@@ -244,6 +363,24 @@ export function RouteForm({ action, initialValues, title, submitLabel }: RouteFo
                 <small className="field__hint">Pots afegir el GPX ara o en una edició posterior.</small>
               )}
             </label>
+
+            {isCicloturista ? (
+              <>
+                <label className="field">
+                  <span>GPX recorregut 2 (opcional)</span>
+                  <input
+                    type="file"
+                    name="gpxFileSecondary"
+                    accept=".gpx,application/gpx+xml,application/xml,text/xml"
+                  />
+                  {state.values.gpxFileNameSecondary ? (
+                    <small className="field__hint">GPX actual: {state.values.gpxFileNameSecondary}</small>
+                  ) : (
+                    <small className="field__hint">Pots afegir el segon GPX ara o en una edició posterior.</small>
+                  )}
+                </label>
+              </>
+            ) : null}
           </div>
 
           <div className="form-actions">

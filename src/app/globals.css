@@ -1680,6 +1680,83 @@ img {
   gap: 1rem;
 }
 
+.route-detail__gpx-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.route-gpx-block {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.route-gpx-block__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--accent-strong);
+}
+
+.route-variant-grid {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.route-variant-stack {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+}
+
+.route-variant-card {
+  border: 1px solid rgba(95, 180, 231, 0.22);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.route-variant-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--accent-strong);
+}
+
+.route-official-card {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(95, 180, 231, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.route-official-card__title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.route-official-card__host {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.route-official-card__path {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--navy-soft);
+  word-break: break-word;
+}
+
 .gpx-viewer {
   display: grid;
   gap: 0.85rem;
@@ -2514,6 +2591,7 @@ img {
   .hero__grid,
   .grid--2,
   .grid--3,
+  .route-variant-grid,
   .route-row,
   .equipment-row,
   .route-detail__grid,
