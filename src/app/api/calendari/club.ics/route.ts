@@ -127,7 +127,7 @@ export async function GET(request: Request) {
     const parsedTime = parseDepartureTime(firstDeparture);
     const routeUrl = `${baseUrl}/rutas/${route.slug}`;
     const isCicloturista = route.routeType === "cicloturista";
-    const summary = isCicloturista ? `Marcha Cicloturista · ${route.name}` : route.name;
+    const summary = route.name;
     const departureLabel = route.departureTimes.join(" / ");
     const description = [
       isCicloturista ? "Tipus: Marcha Cicloturista" : "Tipus: Ruta del club",
