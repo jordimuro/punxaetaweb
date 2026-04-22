@@ -786,22 +786,6 @@ export async function deleteRoute(slug: string) {
   return toRouteRecord(existing);
 }
 
-export async function setRouteSharedCalendarVisibility(slug: string, enabled: boolean) {
-  seedRoutesIfNeeded();
-  db.prepare(`
-    UPDATE routes SET
-      showInSharedCalendar = @showInSharedCalendar,
-      updatedAt = CURRENT_TIMESTAMP
-    WHERE slug = @slug
-  `).run({
-    slug,
-    showInSharedCalendar: enabled ? 1 : 0,
-  });
-
-  const updated = findRouteStatement.get(slug) as RouteRow | undefined;
-  return updated ? toRouteRecord(updated) : null;
-}
-
 export async function saveRouteGpx(slug: string, file: File, slot: "primary" | "secondary" = "primary") {
   seedRoutesIfNeeded();
   const existing = findRouteStatement.get(slug) as RouteRow | undefined;

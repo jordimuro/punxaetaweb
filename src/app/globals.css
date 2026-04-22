@@ -1519,16 +1519,8 @@ img {
 }
 
 .route-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-
-.route-row__content {
-  display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-  gap: 1rem;
-  color: inherit;
-  text-decoration: none;
+  align-items: start;
 }
 
 .route-row__main {
@@ -1536,38 +1528,6 @@ img {
   z-index: 1;
   display: grid;
   gap: 0.25rem;
-}
-
-.route-calendar-toggle {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 0.35rem;
-  min-width: 185px;
-  padding: 0.65rem 0.8rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(18, 53, 90, 0.18);
-  background: rgba(255, 255, 255, 0.68);
-}
-
-.route-calendar-toggle__label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.route-calendar-toggle__label input {
-  width: 1rem;
-  height: 1rem;
-}
-
-.route-calendar-toggle__status {
-  margin: 0;
-  font-size: 0.78rem;
-  color: var(--muted);
 }
 
 .route-row__main p,
@@ -2779,7 +2739,6 @@ img {
   .grid--3,
   .route-variant-grid,
   .route-row,
-  .route-row__content,
   .equipment-row,
   .route-detail__grid,
   .equipacions-featured-grid,
