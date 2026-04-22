@@ -168,6 +168,18 @@ export function RouteForm({
               <FieldError message={state.errors.town} />
             </label>
 
+            <label className="field field--full field--check">
+              <span className="field__checkbox">
+                <input
+                  type="checkbox"
+                  name="showInSharedCalendar"
+                  value="1"
+                  defaultChecked={state.values.showInSharedCalendar}
+                />
+                Mostrar al calendari compartit (.ics)
+              </span>
+            </label>
+
             {isCicloturista ? (
               <label className="field field--full">
                 <span>Web oficial de la marxa</span>

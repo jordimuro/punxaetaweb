@@ -259,7 +259,10 @@ export function formatRouteDate(date: string) {
   }).format(new Date(`${date}T12:00:00`));
 }
 
-export function sortRoutesByDate(routeList: CyclingRoute[], direction: "asc" | "desc" = "asc") {
+export function sortRoutesByDate<T extends CyclingRoute>(
+  routeList: T[],
+  direction: "asc" | "desc" = "asc",
+) {
   return [...routeList].sort((left, right) => {
     if (left.date === right.date) {
       return left.name.localeCompare(right.name, "ca");
@@ -271,9 +274,9 @@ export function sortRoutesByDate(routeList: CyclingRoute[], direction: "asc" | "
   });
 }
 
-export function splitRoutesByDate(routeList: CyclingRoute[], todayKey: string) {
-  const upcoming: CyclingRoute[] = [];
-  const past: CyclingRoute[] = [];
+export function splitRoutesByDate<T extends CyclingRoute>(routeList: T[], todayKey: string) {
+  const upcoming: T[] = [];
+  const past: T[] = [];
 
   for (const route of routeList) {
     if (route.date >= todayKey) {
@@ -289,7 +292,11 @@ export function splitRoutesByDate(routeList: CyclingRoute[], todayKey: string) {
   };
 }
 
-export function getRoutesByView(routeList: CyclingRoute[], todayKey: string, view: RouteView) {
+export function getRoutesByView<T extends CyclingRoute>(
+  routeList: T[],
+  todayKey: string,
+  view: RouteView,
+) {
   const { upcoming, past } = splitRoutesByDate(routeList, todayKey);
 
   if (view === "properes") return upcoming;

@@ -883,6 +883,7 @@ export async function buildRouteValuesFromTemplate(templateSlug: string): Promis
     id: "",
     originalSlug: "",
     routeType: template.routeType,
+    showInSharedCalendar: true,
     slug: buildUniqueRouteSlug(template.slug),
     name: template.name,
     date: "",

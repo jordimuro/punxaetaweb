@@ -118,6 +118,10 @@ export async function GET(request: Request) {
   ];
 
   for (const route of routes) {
+    if (!route.showInSharedCalendar) {
+      continue;
+    }
+
     const parsedDate = parseRouteDate(route.date);
     if (!parsedDate) {
       continue;

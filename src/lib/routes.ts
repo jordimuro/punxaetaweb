@@ -19,6 +19,7 @@ import {
 export type RouteRecord = Omit<CyclingRoute, "distanceToBreakfast" | "elevationToBreakfast"> & {
   id: string;
   routeType: "ruta" | "cicloturista";
+  showInSharedCalendar: boolean;
   externalUrl: string | null;
   distanceToBreakfast: number;
   elevationToBreakfast: number;
@@ -40,6 +41,7 @@ export type RouteFormValues = {
   id: string;
   originalSlug: string;
   routeType: "ruta" | "cicloturista";
+  showInSharedCalendar: boolean;
   slug: string;
   name: string;
   date: string;
@@ -78,6 +80,7 @@ export type RouteFormState = {
 type RouteRow = {
   id: string;
   routeType: "ruta" | "cicloturista";
+  showInSharedCalendar: number;
   slug: string;
   name: string;
   date: string;
@@ -111,6 +114,7 @@ const createTableStatement = db.prepare(`
   CREATE TABLE IF NOT EXISTS routes (
     id TEXT PRIMARY KEY,
     routeType TEXT NOT NULL DEFAULT 'ruta',
+    showInSharedCalendar INTEGER NOT NULL DEFAULT 1,
     slug TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     date TEXT NOT NULL,
@@ -154,22 +158,24 @@ function ensureColumn(name: string, definition: string) {
   db.exec(`ALTER TABLE routes ADD COLUMN ${definition}`);
 }
 
+ensureSchema();
+
 const listRoutesStatement = db.prepare(
-  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes ORDER BY date ASC, name ASC",
+  "SELECT id, routeType, showInSharedCalendar, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes ORDER BY date ASC, name ASC",
 );
 const countRoutesStatement = db.prepare("SELECT COUNT(*) as count FROM routes");
 const findRouteStatement = db.prepare(
-  "SELECT id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes WHERE slug = ? LIMIT 1",
+  "SELECT id, routeType, showInSharedCalendar, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo, distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent, departureTimeSecondary, kmsSecondary, elevationGainSecondary, gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary FROM routes WHERE slug = ? LIMIT 1",
 );
 const insertRouteStatement = db.prepare(`
   INSERT INTO routes (
-    id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
+    id, routeType, showInSharedCalendar, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, departureTimeSecondary,
     kmsSecondary, elevationGainSecondary,
     summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent,
     gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary
   ) VALUES (
-    @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
+    @id, @routeType, @showInSharedCalendar, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town, @departureTimeSecondary,
     @kmsSecondary, @elevationGainSecondary,
     @summary, @meetingPoint, @meetingPointSecondary, @notes, @externalUrl, @gpxRouteName, @gpxFileName, @gpxPath, @gpxContent,
@@ -178,13 +184,13 @@ const insertRouteStatement = db.prepare(`
 `);
 const seedInsertRouteStatement = db.prepare(`
   INSERT OR IGNORE INTO routes (
-    id, routeType, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
+    id, routeType, showInSharedCalendar, slug, name, date, breakfastPlace, departureTimeOne, departureTimeTwo,
     distanceToBreakfast, elevationToBreakfast, kms, elevationGain, town, departureTimeSecondary,
     kmsSecondary, elevationGainSecondary,
     summary, meetingPoint, meetingPointSecondary, notes, externalUrl, gpxRouteName, gpxFileName, gpxPath, gpxContent,
     gpxRouteNameSecondary, gpxFileNameSecondary, gpxPathSecondary, gpxContentSecondary
   ) VALUES (
-    @id, @routeType, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
+    @id, @routeType, @showInSharedCalendar, @slug, @name, @date, @breakfastPlace, @departureTimeOne, @departureTimeTwo,
     @distanceToBreakfast, @elevationToBreakfast, @kms, @elevationGain, @town, @departureTimeSecondary,
     @kmsSecondary, @elevationGainSecondary,
     @summary, @meetingPoint, @meetingPointSecondary, @notes, @externalUrl, @gpxRouteName, @gpxFileName, @gpxPath, @gpxContent,
@@ -194,6 +200,7 @@ const seedInsertRouteStatement = db.prepare(`
 const updateRouteStatement = db.prepare(`
   UPDATE routes SET
     routeType = @routeType,
+    showInSharedCalendar = @showInSharedCalendar,
     slug = @slug,
     name = @name,
     date = @date,
@@ -234,6 +241,7 @@ const seedRoutesTransaction = db.transaction((rows: RouteRow[]) => {
 function ensureSchema() {
   createTableStatement.run();
   ensureColumn("routeType", "routeType TEXT NOT NULL DEFAULT 'ruta'");
+  ensureColumn("showInSharedCalendar", "showInSharedCalendar INTEGER NOT NULL DEFAULT 1");
   ensureColumn("distanceToBreakfast", "distanceToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("elevationToBreakfast", "elevationToBreakfast INTEGER NOT NULL DEFAULT 0");
   ensureColumn("meetingPointSecondary", "meetingPointSecondary TEXT");
@@ -295,6 +303,7 @@ function seedRoutesIfNeeded() {
     seedRoutes.map((route) => ({
       id: randomUUID(),
       routeType: route.routeType ?? "ruta",
+      showInSharedCalendar: 1,
       slug: route.slug,
       name: route.name,
       date: route.date,
@@ -334,6 +343,7 @@ function toRouteRecord(route: RouteRow): RouteRecord {
   return {
     id: route.id,
     routeType: route.routeType ?? "ruta",
+    showInSharedCalendar: route.showInSharedCalendar !== 0,
     slug: route.slug,
     name: route.name,
     date: route.date,
@@ -379,6 +389,7 @@ export const emptyRouteValues = (): RouteFormValues => ({
   id: "",
   originalSlug: "",
   routeType: "ruta",
+  showInSharedCalendar: true,
   slug: "",
   name: "",
   date: "",
@@ -520,6 +531,7 @@ export function routeToFormValues(route: RouteRecord): RouteFormValues {
     id: route.id,
     originalSlug: route.slug,
     routeType: route.routeType,
+    showInSharedCalendar: route.showInSharedCalendar,
     slug: route.slug,
     name: route.name,
     date: route.date,
@@ -602,6 +614,7 @@ export function parseRouteFormData(formData: FormData): RouteFormState {
     id: String(formData.get("id") ?? ""),
     originalSlug: String(formData.get("originalSlug") ?? ""),
     routeType: isCicloturista ? "cicloturista" : "ruta",
+    showInSharedCalendar: String(formData.get("showInSharedCalendar") ?? "").trim() === "1",
     slug: String(formData.get("slug") ?? "").trim(),
     name: String(formData.get("name") ?? "").trim(),
     date: String(formData.get("date") ?? ""),
@@ -646,6 +659,7 @@ export async function createRoute(values: RouteFormValues) {
   const row: RouteRow = {
     id: randomUUID(),
     routeType: values.routeType,
+    showInSharedCalendar: values.showInSharedCalendar ? 1 : 0,
     slug: values.slug,
     name: values.name,
     date: toDbDate(values.date),
@@ -704,6 +718,7 @@ export async function updateRoute(values: RouteFormValues) {
   const row: RouteRow = {
     id: values.id,
     routeType: values.routeType,
+    showInSharedCalendar: values.showInSharedCalendar ? 1 : 0,
     slug: values.slug,
     name: values.name,
     date: toDbDate(values.date),
@@ -769,6 +784,22 @@ export async function deleteRoute(slug: string) {
   }
 
   return toRouteRecord(existing);
+}
+
+export async function setRouteSharedCalendarVisibility(slug: string, enabled: boolean) {
+  seedRoutesIfNeeded();
+  db.prepare(`
+    UPDATE routes SET
+      showInSharedCalendar = @showInSharedCalendar,
+      updatedAt = CURRENT_TIMESTAMP
+    WHERE slug = @slug
+  `).run({
+    slug,
+    showInSharedCalendar: enabled ? 1 : 0,
+  });
+
+  const updated = findRouteStatement.get(slug) as RouteRow | undefined;
+  return updated ? toRouteRecord(updated) : null;
 }
 
 export async function saveRouteGpx(slug: string, file: File, slot: "primary" | "secondary" = "primary") {

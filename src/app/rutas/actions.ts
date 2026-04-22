@@ -7,6 +7,7 @@ import {
   createRoute,
   parseRouteFormData,
   saveRouteGpx,
+  setRouteSharedCalendarVisibility,
   updateRoute,
   type RouteFormState,
 } from "@/lib/routes";
@@ -87,4 +88,19 @@ export async function deleteRouteAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/rutas");
   redirect("/rutas");
+}
+
+export async function toggleRouteSharedCalendarAction(formData: FormData) {
+  const slug = String(formData.get("slug") ?? "").trim();
+  if (!slug) {
+    return;
+  }
+
+  const enabled = String(formData.get("enabled") ?? "").trim() === "1";
+  await setRouteSharedCalendarVisibility(slug, enabled);
+
+  revalidatePath("/");
+  revalidatePath("/rutas");
+  revalidatePath("/rutas/calendari");
+  revalidatePath(`/rutas/${slug}`);
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthOnly } from "@/components/auth";
+import { RouteCalendarToggle } from "@/components/route-calendar-toggle";
 import {
   buildDateLabel,
   getRoutesByView,
@@ -188,60 +189,69 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
 
           <div className="route-list">
             {filteredRoutes.map((route) => (
-              <Link key={route.slug} href={`/rutas/${route.slug}`} className="route-row">
-                <div className="route-row__main">
-                  <div className="route-row__top">
-                    <span className="pill">{buildDateLabel(route.date)}</span>
-                    <span className="pill pill--subtle">{route.town}</span>
-                    {route.routeType === "cicloturista" ? <span className="pill">Marcha Cicloturista</span> : null}
-                  </div>
-                  <h2>{route.name}</h2>
-                </div>
-
-                <dl className="stats stats--compact route-row__stats">
-                  <div>
-                    <dt>Data</dt>
-                    <dd>{buildDateLabel(route.date)}</dd>
-                  </div>
-                  <div>
-                    <dt>Hora eixida</dt>
-                    <dd>{route.departureTimes.join(" / ")}</dd>
-                  </div>
-                  <div>
-                    <dt>Lloc d&apos;eixida</dt>
-                    <dd>{route.meetingPoint}</dd>
-                  </div>
-                  <div>
-                    <dt>Km totals</dt>
-                    <dd>{route.kms} km</dd>
-                  </div>
-                  <div>
-                    <dt>Desnivell total</dt>
-                    <dd>{route.elevationGain} m</dd>
-                  </div>
-                  {route.routeType === "cicloturista" ? (
-                    <div>
-                      <dt>Tipus</dt>
-                      <dd>Marcha Cicloturista</dd>
+              <article key={route.slug} className="route-row">
+                <Link href={`/rutas/${route.slug}`} className="route-row__content">
+                  <div className="route-row__main">
+                    <div className="route-row__top">
+                      <span className="pill">{buildDateLabel(route.date)}</span>
+                      <span className="pill pill--subtle">{route.town}</span>
+                      {route.routeType === "cicloturista" ? <span className="pill">Marcha Cicloturista</span> : null}
                     </div>
-                  ) : (
-                    <>
+                    <h2>{route.name}</h2>
+                  </div>
+
+                  <dl className="stats stats--compact route-row__stats">
+                    <div>
+                      <dt>Data</dt>
+                      <dd>{buildDateLabel(route.date)}</dd>
+                    </div>
+                    <div>
+                      <dt>Hora eixida</dt>
+                      <dd>{route.departureTimes.join(" / ")}</dd>
+                    </div>
+                    <div>
+                      <dt>Lloc d&apos;eixida</dt>
+                      <dd>{route.meetingPoint}</dd>
+                    </div>
+                    <div>
+                      <dt>Km totals</dt>
+                      <dd>{route.kms} km</dd>
+                    </div>
+                    <div>
+                      <dt>Desnivell total</dt>
+                      <dd>{route.elevationGain} m</dd>
+                    </div>
+                    {route.routeType === "cicloturista" ? (
                       <div>
-                        <dt>Lloc d&apos;esmorzar</dt>
-                        <dd>{route.breakfastPlace}</dd>
+                        <dt>Tipus</dt>
+                        <dd>Marcha Cicloturista</dd>
                       </div>
-                      <div>
-                        <dt>Km fins esmorzar</dt>
-                        <dd>{route.distanceToBreakfast} km</dd>
-                      </div>
-                      <div>
-                        <dt>Desnivell fins esmorzar</dt>
-                        <dd>{route.elevationToBreakfast} m</dd>
-                      </div>
-                    </>
-                  )}
-                </dl>
-              </Link>
+                    ) : (
+                      <>
+                        <div>
+                          <dt>Lloc d&apos;esmorzar</dt>
+                          <dd>{route.breakfastPlace}</dd>
+                        </div>
+                        <div>
+                          <dt>Km fins esmorzar</dt>
+                          <dd>{route.distanceToBreakfast} km</dd>
+                        </div>
+                        <div>
+                          <dt>Desnivell fins esmorzar</dt>
+                          <dd>{route.elevationToBreakfast} m</dd>
+                        </div>
+                      </>
+                    )}
+                  </dl>
+                </Link>
+
+                <AuthOnly fallback={null}>
+                  <RouteCalendarToggle
+                    slug={route.slug}
+                    initialEnabled={route.showInSharedCalendar}
+                  />
+                </AuthOnly>
+              </article>
             ))}
           </div>
 
